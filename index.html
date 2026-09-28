@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lounge & Match Analytics</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --green: #22c55e;
+      --red: #ef4444;
+      --border: #334155;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    body { background-color: var(--bg-color); color: var(--text-main); padding: 20px; max-width: 1200px; margin: 0 auto; }
+
+    header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid var(--border); margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
+    .player-profile { display: flex; align-items: center; gap: 16px; }
+    .avatar { width: 60px; height: 60px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 24px; color: #000; }
+    .player-info h1 { font-size: 1.5rem; }
+    .player-info p { color: var(--text-muted); font-size: 0.9rem; }
+
+    .controls-container { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    
+    /* Season Dropdown Styling */
+    .season-select {
+      background: var(--card-bg);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      outline: none;
+    }
+    .season-select:hover { border-color: var(--accent); }
+
+    /* Grid Layout */
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .card { background: var(--card-bg); border-radius: 12px; padding: 20px; border: 1px solid var(--border); }
+    .card h3 { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    .card .value { font-size: 1.8rem; font-weight: 700; color: var(--text-main); }
+    .card .subtext { font-size: 0.8rem; margin-top: 4px; }
+
+    /* Chart Section */
+    .chart-container { background: var(--card-bg); border-radius: 12px; padding: 20px; border: 1px solid var(--border); margin-bottom: 24px; position: relative; height: 350px; }
+
+    /* Table Section */
+    .section-title { font-size: 1.2rem; margin-bottom: 12px; font-weight: 600; }
+    .table-container { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); overflow-x: auto; margin-bottom: 24px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+    th, td { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+    th { background: rgba(0,0,0,0.2); color: var(--text-muted); font-weight: 600; }
+    tr:last-child td { border-bottom: none; }
+    
+    .pos-plus { color: var(--green); font-weight: 600; }
+    .pos-minus { color: var(--red); font-weight: 600; }
+    .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; display: inline-block; }
+    .badge-win { background: rgba(34, 197, 94, 0.2); color: var(--green); }
+    .badge-loss { background: rgba(239, 68, 68, 0.2); color: var(--red); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="player-profile">
+      <div class="avatar" id="avatarInitials">MK</div>
+      <div class="player-info">
+        <h1 id="playerName">SpielerName</h1>
+        <p>Lounge Tier: <span id="playerTier" style="color: var(--accent);">Diamond 1</span> | Region: EU</p>
+      </div>
+    </div>
+
+    <div class="controls-container">
+      <!-- Season Auswahl Dropdown -->
+      <select id="seasonSelect" class="season-select" onchange="onSeasonChange(this.value)">
+        <option value="season3" selected>Season 3 (Aktuell)</option>
+        <option value="season2">Season 2</option>
+        <option value="season1">Season 1</option>
+      </select>
+
+      <!-- Umschalter für 12p vs 24p -->
+      <div style="display: flex; gap: 8px; background: var(--card-bg); padding: 4px; border-radius: 8px; border: 1px solid var(--border);">
+        <button id="btn12p" onclick="switchFormat('12p')" style="padding: 8px 16px; border: none; border-radius: 6px; background: var(--accent); color: #000; font-weight: bold; cursor: pointer;">12p Lounge</button>
+        <button id="btn24p" onclick="switchFormat('24p')" style="padding: 8px 16px; border: none; border-radius: 6px; background: transparent; color: var(--text-muted); font-weight: bold; cursor: pointer;">24p Lounge</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Summary Cards -->
+  <div class="grid">
+    <div class="card">
+      <h3>End / Aktuelles MMR</h3>
+      <div class="value" id="currentMMR">11,420</div>
+      <div class="subtext pos-plus" id="mmrStatus">Active Season</div>
+    </div>
+    <div class="card">
+      <h3>Peak MMR</h3>
+      <div class="value" id="peakMMR">12,150</div>
+      <div class="subtext" style="color: var(--text-muted)">Season Highest</div>
+    </div>
+    <div class="card">
+      <h3>Win Rate</h3>
+      <div class="value" id="winRate">58.4%</div>
+      <div class="subtext" id="eventCount" style="color: var(--text-muted)">124 Events</div>
+    </div>
+    <div class="card">
+      <h3>Avg. Platzierung</h3>
+      <div class="value" id="avgRank">4.2</div>
+      <div class="subtext" style="color: var(--text-muted)">Pro Lobby</div>
+    </div>
+  </div>
+
+  <!-- MMR Chart -->
+  <div class="chart-container">
+    <div class="section-title" id="chartTitle">MMR Verlauf (Season 3 - 12p)</div>
+    <canvas id="mmrChart"></canvas>
+  </div>
+
+  <!-- Strecken-Stats & Ingame Details Grid -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 24px;">
+    
+    <!-- Top Tracks -->
+    <div class="card">
+      <div class="section-title">Beste Strecken</div>
+      <table>
+        <thead>
+          <tr><th>Strecke</th><th>Winrate</th><th>Avg. Pos</th></tr>
+        </thead>
+        <tbody id="topTracksBody">
+          <!-- Dynamisch befüllt -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Extra Ingame Stats -->
+    <div class="card">
+      <div class="section-title">In-Game Metriken</div>
+      <table style="margin-top: 10px;">
+        <tr><td>Münzen pro Rennen:</td><td class="value" id="coinsAvg" style="font-size: 1rem;">9.4 avg</td></tr>
+        <tr><td>Item-Pulls (Shock/Star):</td><td class="value" style="font-size: 1rem;">14.2%</td></tr>
+        <tr><td>Blue Shell Dodges:</td><td class="value" style="font-size: 1rem;">18 Total</td></tr>
+        <tr><td>Lieblings-Fahrzeug:</td><td class="value" style="font-size: 1rem;">Yoshi + Teddy Buggy</td></tr>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- Match History Table -->
+  <div class="section-title">Letzte Events</div>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Datum</th>
+          <th>Format</th>
+          <th>Platzierung</th>
+          <th>Punkte</th>
+          <th>MMR Change</th>
+          <th>Neues MMR</th>
+        </tr>
+      </thead>
+      <tbody id="matchHistoryBody">
+        <!-- Dynamisch befüllt -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // --- DATENBANK STRUKTUR NACH SEASONS & FORMATEN ---
+    const statsData = {
+      season3: {
+        '12p': {
+          tier: "Diamond 1",
+          mmr: 11420,
+          peak: 12150,
+          winRate: "58.4%",
+          events: "124 Events gespielt",
+          avgPos: "4.2",
+          coinsAvg: "9.4 avg",
+          topTracks: [
+            { name: "Mute City", winrate: "74%", avg: "2.1" },
+            { name: "Big Blue", winrate: "68%", avg: "2.8" },
+            { name: "Rainbow Road (3DS)", winrate: "62%", avg: "3.4" }
+          ],
+          history: [
+            { date: "2026-03-28", format: "FFA 12", rank: 2, score: 82, diff: "+68", mmr: 11420 },
+            { date: "2026-03-27", format: "2v2", rank: 8, score: 45, diff: "-42", mmr: 11352 }
+          ],
+          chartDates: ["1. Mar", "10. Mar", "20. Mar", "28. Mar"],
+          chartValues: [10800, 11100, 11250, 11420]
+        },
+        '24p': {
+          tier: "Gold 2",
+          mmr: 7850,
+          peak: 8200,
+          winRate: "42.1%",
+          events: "45 Events gespielt",
+          avgPos: "9.6",
+          coinsAvg: "7.8 avg",
+          topTracks: [
+            { name: "Waluigi Pinball", winrate: "55%", avg: "5.2" },
+            { name: "Mount Wario", winrate: "51%", avg: "6.1" }
+          ],
+          history: [
+            { date: "2026-03-26", format: "24p Knockout", rank: 5, score: 60, diff: "+35", mmr: 7850 }
+          ],
+          chartDates: ["1. Mar", "10. Mar", "20. Mar", "28. Mar"],
+          chartValues: [7200, 7500, 7900, 7850]
+        }
+      },
+      season2: {
+        '12p': {
+          tier: "Master",
+          mmr: 10200,
+          peak: 10500,
+          winRate: "52.0%",
+          events: "98 Events gespielt",
+          avgPos: "4.8",
+          coinsAvg: "8.9 avg",
+          topTracks: [
+            { name: "Cloudtop Cruise", winrate: "65%", avg: "3.1" },
+            { name: "Super Bell Subway", winrate: "60%", avg: "3.6" }
+          ],
+          history: [
+            { date: "2025-12-15", format: "FFA 12", rank: 1, score: 95, diff: "+80", mmr: 10200 }
+          ],
+          chartDates: ["1. Oct", "1. Nov", "1. Dec"],
+          chartValues: [9200, 9800, 10200]
+        },
+        '24p': {
+          tier: "Silver 1",
+          mmr: 6100,
+          peak: 6400,
+          winRate: "38.0%",
+          events: "20 Events gespielt",
+          avgPos: "11.2",
+          coinsAvg: "6.5 avg",
+          topTracks: [
+            { name: "Toad's Turnpike", winrate: "45%", avg: "8.1" }
+          ],
+          history: [
+            { date: "2025-11-20", format: "24p FFA", rank: 12, score: 35, diff: "-10", mmr: 6100 }
+          ],
+          chartDates: ["1. Oct", "1. Nov", "1. Dec"],
+          chartValues: [5800, 6200, 6100]
+        }
+      },
+      season1: {
+        '12p': {
+          tier: "Diamond 3",
+          mmr: 8900,
+          peak: 9100,
+          winRate: "49.0%",
+          events: "60 Events gespielt",
+          avgPos: "5.1",
+          coinsAvg: "8.2 avg",
+          topTracks: [
+            { name: "Mario Kart Stadium", winrate: "58%", avg: "4.0" }
+          ],
+          history: [
+            { date: "2025-05-10", format: "FFA 12", rank: 3, score: 70, diff: "+40", mmr: 8900 }
+          ],
+          chartDates: ["1. Mar", "1. Apr", "1. May"],
+          chartValues: [7500, 8200, 8900]
+        },
+        '24p': {
+          tier: "Unranked",
+          mmr: 0,
+          peak: 0,
+          winRate: "0%",
+          events: "0 Events",
+          avgPos: "N/A",
+          coinsAvg: "0 avg",
+          topTracks: [],
+          history: [],
+          chartDates: ["Start"],
+          chartValues: [0]
+        }
+      }
+    };
+
+    const playerName = "YourName";
+    let currentSeason = 'season3';
+    let currentFormat = '12p';
+    let currentChart = null;
+
+    function renderData() {
+      const data = statsData[currentSeason][currentFormat];
+
+      // Profile & Head
+      document.getElementById('playerName').innerText = playerName;
+      document.getElementById('avatarInitials').innerText = playerName.substring(0, 2).toUpperCase();
+      document.getElementById('playerTier').innerText = data.tier;
+
+      // Cards
+      document.getElementById('currentMMR').innerText = data.mmr.toLocaleString();
+      document.getElementById('peakMMR').innerText = data.peak.toLocaleString();
+      document.getElementById('winRate').innerText = data.winRate;
+      document.getElementById('eventCount').innerText = data.events;
+      document.getElementById('avgRank').innerText = data.avgPos;
+      document.getElementById('coinsAvg').innerText = data.coinsAvg;
+
+      // Chart Title
+      const seasonText = document.getElementById('seasonSelect').options[document.getElementById('seasonSelect').selectedIndex].text;
+      document.getElementById('chartTitle').innerText = `MMR Verlauf (${seasonText} - ${currentFormat})`;
+
+      // Top Tracks
+      const topTracksBody = document.getElementById('topTracksBody');
+      topTracksBody.innerHTML = '';
+      if(data.topTracks.length === 0) {
+        topTracksBody.innerHTML = '<tr><td colspan="3" style="color:var(--text-muted)">Keine Daten verfügbar</td></tr>';
+      } else {
+        data.topTracks.forEach(t => {
+          topTracksBody.innerHTML += `<tr><td><b>${t.name}</b></td><td>${t.winrate}</td><td>${t.avg}</td></tr>`;
+        });
+      }
+
+      // Match History
+      const historyBody = document.getElementById('matchHistoryBody');
+      historyBody.innerHTML = '';
+      if(data.history.length === 0) {
+        historyBody.innerHTML = '<tr><td colspan="6" style="color:var(--text-muted)">Keine Matches in dieser Season</td></tr>';
+      } else {
+        data.history.forEach(m => {
+          const diffClass = m.diff.startsWith('+') ? 'pos-plus' : 'pos-minus';
+          const badgeClass = m.rank <= (currentFormat === '24p' ? 6 : 3) ? 'badge-win' : 'badge-loss';
+          historyBody.innerHTML += `
+            <tr>
+              <td>${m.date}</td>
+              <td>${m.format}</td>
+              <td><span class="badge ${badgeClass}">${m.rank}. Platz</span></td>
+              <td>${m.score} pts</td>
+              <td class="${diffClass}">${m.diff}</td>
+              <td><b>${m.mmr}</b></td>
+            </tr>
+          `;
+        });
+      }
+
+      // Update Chart
+      if (currentChart) currentChart.destroy();
+      const ctx = document.getElementById('mmrChart').getContext('2d');
+      currentChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: data.chartDates,
+          datasets: [{
+            label: `MMR`,
+            data: data.chartValues,
+            borderColor: currentFormat === '24p' ? '#a855f7' : '#38bdf8',
+            backgroundColor: currentFormat === '24p' ? 'rgba(168, 85, 247, 0.1)' : 'rgba(56, 189, 248, 0.1)',
+            fill: true,
+            tension: 0.3,
+            borderWidth: 3
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+            y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }
+          }
+        }
+      });
+    }
+
+    // Season Event Handler
+    function onSeasonChange(seasonKey) {
+      currentSeason = seasonKey;
+      renderData();
+    }
+
+    // Format Umschalt-Funktion
+    function switchFormat(format) {
+      currentFormat = format;
+      const btn12 = document.getElementById('btn12p');
+      const btn24 = document.getElementById('btn24p');
+
+      if (format === '12p') {
+        btn12.style.background = 'var(--accent)';
+        btn12.style.color = '#000';
+        btn24.style.background = 'transparent';
+        btn24.style.color = 'var(--text-muted)';
+      } else {
+        btn24.style.background = '#a855f7';
+        btn24.style.color = '#fff';
+        btn12.style.background = 'transparent';
+        btn12.style.color = 'var(--text-muted)';
+      }
+
+      renderData();
+    }
+
+    // Initiales Laden
+    renderData();
+  </script>
+</body>
+</html>
