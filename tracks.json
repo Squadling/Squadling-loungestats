@@ -76,7 +76,7 @@
     "icon": "images/icons/sky-high-sundae.png",
     "layout": "images/layouts/sky-high-sundae.jpg"
   },
-{
+  {
     "id": "warios-shipyard",
     "name": "Wario Shipyard",
     "game": "3DS",
@@ -250,5 +250,33 @@
     "game": "SNES",
     "icon": "images/icons/snes-vanilla-lake-1.png",
     "layout": "images/layouts/snes-vanilla-lake-1.jpg"
+  },
+  {
+    "id": "snes-mario-circuit-1",
+    "name": "SNES Mario Circuit 1",
+    "game": "SNES",
+    "icon": "images/icons/snes-mario-circuit-1.png",
+    "layout": "images/layouts/snes-mario-circuit-1.jpg"
+  },
+  {
+    "id": "snes-mario-circuit-2",
+    "name": "SNES Mario Circuit 2",
+    "game": "SNES",
+    "icon": "images/icons/snes-mario-circuit-2.png",
+    "layout": "images/layouts/snes-mario-circuit-2.jpg"
+  },
+  {
+    "id": "snes-mario-circuit-3",
+    "name": "SNES Mario Circuit 3",
+    "game": "SNES",
+    "icon": "images/icons/snes-mario-circuit-3.png",
+    "layout": "images/layouts/snes-mario-circuit-3.jpg"
+  },
+  {
+    "id": "snes-koopa-beach-1",
+    "name": "SNES Koopa Beach 1",
+    "game": "SNES",
+    "icon": "images/icons/snes-koopa-beach-1.png",
+    "layout": "images/layouts/snes-koopa-beach-1.jpg"
   }
 ]
