@@ -32,10 +32,12 @@
       border-radius: 16px;
       border: 1px solid var(--card-border);
       margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
     }
     .user-info h1 { font-size: 1.8rem; font-weight: 800; color: #fff; }
     .user-info p { color: var(--text-muted); font-size: 0.95rem; }
-    .header-actions { display: flex; gap: 12px; align-items: center; }
+    .header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 
     .btn {
       background: var(--accent);
@@ -54,6 +56,8 @@
     .btn:hover { background: var(--accent-hover); }
     .btn-secondary { background: #1e293b; color: var(--text-main); border: 1px solid var(--card-border); }
     .btn-secondary:hover { background: #334155; }
+    .btn-danger { background: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b; }
+    .btn-danger:hover { background: #991b1b; color: #fff; }
 
     .controls {
       display: flex;
@@ -203,6 +207,8 @@
         <p><span id="player-region">Region: GER</span> | Player ID: 15545</p>
       </div>
       <div class="header-actions">
+        <button class="btn btn-secondary" onclick="exportData()" title="Backup Mogis as JSON">📥 Export</button>
+        <button class="btn btn-secondary" onclick="importData()" title="Load Mogis from JSON">📤 Import</button>
         <button class="btn btn-secondary" onclick="updateCurrentMMRPrompt()">⚙️ Set Current MMR</button>
         <a id="lounge-link" href="https://lounge.mkcentral.com/mkworld/PlayerDetails/15545?season=3&p=12" target="_blank" class="btn btn-secondary">
           Official Lounge Profile ↗
@@ -213,9 +219,9 @@
 
     <div class="controls">
       <div class="format-selector">
-        <button class="format-btn active" onclick="setFormat('12p')">12p Lounge</button>
-        <button class="format-btn" onclick="setFormat('24p')">24p Lounge</button>
-        <button class="format-btn" onclick="setFormat('ko')">KO Tour</button>
+        <button class="format-btn active" onclick="setFormat('12p', event)">12p Lounge</button>
+        <button class="format-btn" onclick="setFormat('24p', event)">24p Lounge</button>
+        <button class="format-btn" onclick="setFormat('ko', event)">KO Tour</button>
       </div>
       <div>
         <label for="season-select" style="color: var(--text-muted); font-size: 0.9rem;">Season: </label>
@@ -314,9 +320,12 @@
         <button class="close-btn" onclick="closeViewMogiModal()">&times;</button>
       </div>
       <div id="view-mogi-body"></div>
-      <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
-        <button class="btn btn-secondary" onclick="closeViewMogiModal()">Close</button>
-        <button class="btn" id="edit-from-view-btn">Edit Mogi</button>
+      <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: space-between; align-items: center;">
+        <button class="btn btn-danger" id="delete-from-view-btn">Delete Mogi</button>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn btn-secondary" onclick="closeViewMogiModal()">Close</button>
+          <button class="btn" id="edit-from-view-btn">Edit Mogi</button>
+        </div>
       </div>
     </div>
   </div>
@@ -338,10 +347,10 @@
     fetch('tracks.json').then(res => res.json()).then(data => { tracksDatabase = data; }).catch(() => {});
     fetch('ranks.json').then(res => res.json()).then(data => { ranksDatabase = data; updateStatsGrid(); }).catch(() => {});
 
-    function setFormat(format) {
+    function setFormat(format, evt) {
       currentFormat = format;
       document.querySelectorAll('.format-btn').forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
+      if(evt && evt.target) evt.target.classList.add('active');
       updateLoungeLink();
       renderMogis();
       updateStatsGrid();
@@ -570,7 +579,23 @@
         openAddMogiModal(mogi);
       };
 
+      document.getElementById('delete-from-view-btn').onclick = () => {
+        deleteMogi(mogi.id);
+      };
+
       document.getElementById('view-mogi-modal').classList.add('active');
+    }
+
+    function deleteMogi(id) {
+      const pin = prompt("Enter Admin PIN to delete this Mogi:");
+      if (pin !== ADMIN_PIN) return alert("Incorrect PIN!");
+
+      if (confirm("Are you sure you want to delete this Mogi entry?")) {
+        savedMogis = savedMogis.filter(m => m.id != id);
+        localStorage.setItem('squadling_mogis', JSON.stringify(savedMogis));
+        closeViewMogiModal();
+        renderMogis();
+      }
     }
 
     function closeViewMogiModal() {
@@ -619,6 +644,46 @@
       const s = ["th", "st", "nd", "rd"];
       const v = n % 100;
       return s[(v - 20) % 10] || s[v] || s[0];
+    }
+
+    function exportData() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ mogis: savedMogis, mmrs: playerMMRs }));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `squadling_backup_${Date.now()}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function importData() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'application/json';
+      input.onchange = e => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.readAsText(file, 'UTF-8');
+        reader.onload = readerEvent => {
+          try {
+            const content = JSON.parse(readerEvent.target.result);
+            if (content.mogis && content.mmrs) {
+              savedMogis = content.mogis;
+              playerMMRs = content.mmrs;
+              localStorage.setItem('squadling_mogis', JSON.stringify(savedMogis));
+              localStorage.setItem('squadling_mmrs', JSON.stringify(playerMMRs));
+              renderMogis();
+              updateStatsGrid();
+              alert("Data imported successfully!");
+            } else {
+              alert("Invalid JSON structure!");
+            }
+          } catch(err) {
+            alert("Error parsing JSON file!");
+          }
+        }
+      }
+      input.click();
     }
 
     renderMogis();
