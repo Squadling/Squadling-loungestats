@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Squadling - MKWorld Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
       --bg-dark: #0b0f19;
@@ -16,13 +15,14 @@
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
       --gold: #f59e0b;
+      --green: #22c55e;
+      --red: #ef4444;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
     body { background-color: var(--bg-dark); color: var(--text-main); padding: 20px; line-height: 1.5; }
     .container { max-width: 1200px; margin: 0 auto; }
 
-    /* Header */
     header {
       display: flex;
       justify-content: space-between;
@@ -55,7 +55,6 @@
     .btn-secondary { background: #1e293b; color: var(--text-main); border: 1px solid var(--card-border); }
     .btn-secondary:hover { background: #334155; }
 
-    /* Format Controls */
     .controls {
       display: flex;
       justify-content: space-between;
@@ -76,7 +75,6 @@
     }
     .format-btn.active { background: var(--accent); color: #fff; }
 
-    /* Stats Grid */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -92,7 +90,6 @@
     .stat-card .label { color: var(--text-muted); font-size: 0.85rem; font-weight: 500; text-transform: uppercase; }
     .stat-card .value { font-size: 1.8rem; font-weight: 700; margin-top: 6px; }
 
-    /* Main Content Sections */
     .section-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 16px; }
     .mogi-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
     .mogi-card {
@@ -103,12 +100,20 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      cursor: pointer;
+      transition: transform 0.1s, border-color 0.2s;
     }
+    .mogi-card:hover { border-color: var(--accent); transform: translateY(-2px); }
     .mogi-info h4 { font-size: 1.05rem; }
     .mogi-info p { color: var(--text-muted); font-size: 0.85rem; }
+    
+    .mogi-stats-summary { display: flex; align-items: center; gap: 20px; }
     .mogi-score { font-size: 1.4rem; font-weight: 800; color: var(--gold); }
+    .mmr-change { font-weight: 700; font-size: 1.1rem; }
+    .mmr-gain { color: var(--green); }
+    .mmr-loss { color: var(--red); }
 
-    /* Modal Styling for "Add Mogi" */
+    /* Modals */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -135,7 +140,7 @@
 
     .race-input-group {
       display: grid;
-      grid-template-columns: 80px 1fr 120px 80px;
+      grid-template-columns: 75px 1fr 130px 75px;
       gap: 10px;
       align-items: center;
       margin-bottom: 10px;
@@ -152,6 +157,13 @@
       outline: none;
     }
 
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
     .empty-state {
       text-align: center;
       padding: 40px;
@@ -160,12 +172,21 @@
       border-radius: 12px;
       color: var(--text-muted);
     }
+
+    .race-detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: #0f172a;
+      border-radius: 6px;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+    }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <!-- Header -->
     <header>
       <div class="user-info">
         <h1 id="player-name">Squadling</h1>
@@ -179,7 +200,6 @@
       </div>
     </header>
 
-    <!-- Controls -->
     <div class="controls">
       <div class="format-selector">
         <button class="format-btn active" onclick="setFormat('12p')">12p Lounge</button>
@@ -196,7 +216,6 @@
       </div>
     </div>
 
-    <!-- Quick Stats -->
     <div class="stats-grid">
       <div class="stat-card">
         <div class="label">Current MMR</div>
@@ -216,34 +235,44 @@
       </div>
     </div>
 
-    <!-- Mogi History -->
     <div class="section-title">Mogi History & Results</div>
     <div id="mogi-container" class="mogi-list">
       <div class="empty-state">No Mogis added yet for this format. Click "+ Add Mogi" to enter your first match!</div>
     </div>
   </div>
 
-  <!-- Modal: Add Mogi -->
+  <!-- Modal: Add / Edit Mogi -->
   <div class="modal-overlay" id="add-mogi-modal">
     <div class="modal">
       <div class="modal-header">
-        <h3>Add New Mogi Result</h3>
+        <h3 id="modal-title">Add New Mogi Result</h3>
         <button class="close-btn" onclick="closeAddMogiModal()">&times;</button>
       </div>
       <form id="mogi-form" onsubmit="saveMogi(event)">
+        <input type="hidden" id="editing-mogi-id">
         <div style="margin-bottom: 16px;">
           <label style="display: block; margin-bottom: 6px; font-size: 0.9rem;">Mogi Title / Event Name</label>
           <input type="text" id="mogi-title" placeholder="e.g., Squad Queue Mogi #1" required style="width: 100%;">
         </div>
 
-        <div class="section-title" style="font-size: 1rem; margin-top: 20px;">Races Played (1 - 12)</div>
-        <div id="races-container">
-          <!-- Race rows dynamically generated here -->
-        </div>
+        <div class="section-title" style="font-size: 1rem; margin-top: 15px;">Races Played</div>
+        <div id="races-container"></div>
 
         <button type="button" class="btn btn-secondary" onclick="addRaceInput()" style="margin-top: 10px; width: 100%;">+ Add Another Race</button>
 
-        <div style="margin-top: 24px; display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 12px 16px; border-radius: 10px;">
+        <!-- Gain/Lose & Placement Controls -->
+        <div class="form-row-2" style="margin-top: 20px;">
+          <div>
+            <label style="display: block; margin-bottom: 6px; font-size: 0.85rem;">Gain / Lose (MMR)</label>
+            <input type="text" id="mogi-mmr-change" placeholder="+45 or -20" oninput="updateMMRColor(this)" style="width: 100%; font-weight: 700;">
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 6px; font-size: 0.85rem;">Final Placement</label>
+            <select id="mogi-final-placement" style="width: 100%;"></select>
+          </div>
+        </div>
+
+        <div style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 12px 16px; border-radius: 10px;">
           <span style="font-weight: 600;">Calculated Total Score:</span>
           <span id="calculated-total-score" style="font-size: 1.4rem; font-weight: 800; color: var(--gold);">0 Pts</span>
         </div>
@@ -256,26 +285,44 @@
     </div>
   </div>
 
+  <!-- Modal: View Mogi Details -->
+  <div class="modal-overlay" id="view-mogi-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="view-mogi-title">Mogi Details</h3>
+        <button class="close-btn" onclick="closeViewMogiModal()">&times;</button>
+      </div>
+      <div id="view-mogi-body"></div>
+      <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+        <button class="btn btn-secondary" onclick="closeViewMogiModal()">Close</button>
+        <button class="btn" id="edit-from-view-btn">Edit Mogi</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // Configuration
-    const ADMIN_PIN = "8864"; // CHANGE THIS to your secret PIN!
+    const ADMIN_PIN = "1234"; // ÄNDERE DIESE PIN ZU DEINER GEHEIMEN PIN!
     let currentFormat = "12p";
     let tracksDatabase = [];
     let savedMogis = JSON.parse(localStorage.getItem('squadling_mogis')) || [];
 
-    // Points mapping per position (1st to 12th)
-    const positionPoints = {
+    // Points mapping per format
+    const points12p = {
       1: 15, 2: 12, 3: 10, 4: 9, 5: 8, 6: 7,
       7: 6,  8: 5,  9: 4, 10: 3, 11: 2, 12: 1
     };
 
-    // Load Tracks JSON
+    const points24p = {
+      1: 15, 2: 12, 3: 10, 4: 9, 5: 9, 6: 8, 7: 8,
+      8: 7, 9: 7, 10: 6, 11: 6, 12: 6, 13: 5, 14: 5,
+      15: 5, 16: 4, 17: 4, 18: 4, 19: 3, 20: 3, 21: 3,
+      22: 2, 23: 2, 24: 1
+    };
+
     fetch('tracks.json')
       .then(res => res.json())
-      .then(data => {
-        tracksDatabase = data;
-      })
-      .catch(err => console.log('Notice: tracks.json will load when available on GitHub Pages.'));
+      .then(data => { tracksDatabase = data; })
+      .catch(err => console.log('Notice: tracks.json will load when ready on GitHub Pages.'));
 
     function setFormat(format) {
       currentFormat = format;
@@ -283,28 +330,66 @@
       event.target.classList.add('active');
 
       const loungeLink = document.getElementById('lounge-link');
-      if (format === '12p') {
-        loungeLink.href = "https://lounge.mkcentral.com/mkworld/PlayerDetails/15545?season=3&p=12";
-      } else if (format === '24p') {
-        loungeLink.href = "https://lounge.mkcentral.com/mkworld/PlayerDetails/15545?season=3&p=24";
-      } else if (format === 'ko') {
-        loungeLink.href = "https://docs.google.com/spreadsheets/d/14h-Cp5yK9nddewMIYtlzXvgjRiORt2lMAtq-CXjheec/edit?gid=341469667#gid=341469667";
-      }
+      if (format === '12p') loungeLink.href = "https://lounge.mkcentral.com/mkworld/PlayerDetails/15545?season=3&p=12";
+      else if (format === '24p') loungeLink.href = "https://lounge.mkcentral.com/mkworld/PlayerDetails/15545?season=3&p=24";
+      else if (format === 'ko') loungeLink.href = "https://docs.google.com/spreadsheets/d/14h-Cp5yK9nddewMIYtlzXvgjRiORt2lMAtq-CXjheec/edit?gid=341469667#gid=341469667";
 
       renderMogis();
     }
 
-    function openAddMogiModal() {
-      const pin = prompt("Enter Admin PIN to add or edit Mogis:");
+    function populatePlacementDropdown() {
+      const select = document.getElementById('mogi-final-placement');
+      select.innerHTML = '';
+      const maxPlaces = currentFormat === '24p' ? 24 : 12;
+      for (let i = 1; i <= maxPlaces; i++) {
+        select.innerHTML += `<option value="${i}">${i}${getOrdinal(i)} Place</option>`;
+      }
+    }
+
+    function updateMMRColor(input) {
+      const val = input.value.trim();
+      if (val.startsWith('+')) {
+        input.style.color = 'var(--green)';
+      } else if (val.startsWith('-')) {
+        input.style.color = 'var(--red)';
+      } else {
+        input.style.color = '#fff';
+      }
+    }
+
+    function openAddMogiModal(mogiToEdit = null) {
+      const pin = prompt("Enter Admin PIN:");
       if (pin !== ADMIN_PIN) {
-        alert("Incorrect PIN! Only Squadling has editing rights.");
+        alert("Incorrect PIN!");
         return;
       }
 
+      populatePlacementDropdown();
       document.getElementById('races-container').innerHTML = '';
-      for(let i=1; i<=12; i++) {
-        addRaceInput(i);
+      document.getElementById('mogi-form').reset();
+      
+      const mmrInput = document.getElementById('mogi-mmr-change');
+      mmrInput.style.color = '#fff';
+
+      if (mogiToEdit) {
+        document.getElementById('modal-title').textContent = "Edit Mogi Result";
+        document.getElementById('editing-mogi-id').value = mogiToEdit.id;
+        document.getElementById('mogi-title').value = mogiToEdit.title;
+        document.getElementById('mogi-mmr-change').value = mogiToEdit.mmrChange || '';
+        document.getElementById('mogi-final-placement').value = mogiToEdit.placement || 1;
+        updateMMRColor(mmrInput);
+
+        mogiToEdit.races.forEach((r, idx) => {
+          addRaceInput(idx + 1, r.track, r.position);
+        });
+      } else {
+        document.getElementById('modal-title').textContent = "Add New Mogi Result";
+        document.getElementById('editing-mogi-id').value = '';
+        for (let i = 1; i <= 12; i++) {
+          addRaceInput(i);
+        }
       }
+
       document.getElementById('add-mogi-modal').classList.add('active');
     }
 
@@ -312,25 +397,26 @@
       document.getElementById('add-mogi-modal').classList.remove('active');
     }
 
-    function addRaceInput(raceNum = null) {
+    function addRaceInput(raceNum = null, selectedTrack = null, selectedPos = 1) {
       const container = document.getElementById('races-container');
-      const currentCount = container.children.length + 1;
-      if (currentCount > 12) return;
-
-      const num = raceNum || currentCount;
+      const num = raceNum || (container.children.length + 1);
       const div = document.createElement('div');
       div.className = 'race-input-group';
-      
+
       let trackOptions = tracksDatabase.length > 0 
-        ? tracksDatabase.map(t => `<option value="${t.name}">${t.name}</option>`).join('')
-        : `<option value="Unknown Track">Track ${num}</option>`;
+        ? tracksDatabase.map(t => `<option value="${t.name}" ${t.name === selectedTrack ? 'selected' : ''}>${t.name}</option>`).join('')
+        : `<option value="Track ${num}">Track ${num}</option>`;
+
+      const maxPos = currentFormat === '24p' ? 24 : 12;
+      let posOptions = '';
+      for (let p = 1; p <= maxPos; p++) {
+        posOptions += `<option value="${p}" ${p == selectedPos ? 'selected' : ''}>${p}${getOrdinal(p)} Place</option>`;
+      }
 
       div.innerHTML = `
         <span style="font-size:0.85rem; color: var(--text-muted);">Race ${num}</span>
         <select class="race-track">${trackOptions}</select>
-        <select class="race-pos" onchange="recalculateScore()">
-          ${Object.keys(positionPoints).map(p => `<option value="${p}">${p}${getOrdinal(p)} Place</option>`).join('')}
-        </select>
+        <select class="race-pos" onchange="recalculateScore()">${posOptions}</select>
         <span class="race-pts" style="font-weight:700; color:var(--gold); text-align:right;">15 Pts</span>
       `;
       container.appendChild(div);
@@ -339,9 +425,11 @@
 
     function recalculateScore() {
       let total = 0;
+      const ptsTable = currentFormat === '24p' ? points24p : points12p;
+
       document.querySelectorAll('.race-input-group').forEach(group => {
         const pos = parseInt(group.querySelector('.race-pos').value);
-        const pts = positionPoints[pos] || 0;
+        const pts = ptsTable[pos] || 0;
         group.querySelector('.race-pts').textContent = `${pts} Pts`;
         total += pts;
       });
@@ -351,31 +439,84 @@
     function saveMogi(e) {
       e.preventDefault();
       const title = document.getElementById('mogi-title').value;
+      const mmrChange = document.getElementById('mogi-mmr-change').value;
+      const placement = parseInt(document.getElementById('mogi-final-placement').value);
+      const editingId = document.getElementById('editing-mogi-id').value;
+
       let totalScore = 0;
       const races = [];
+      const ptsTable = currentFormat === '24p' ? points24p : points12p;
 
       document.querySelectorAll('.race-input-group').forEach(group => {
         const track = group.querySelector('.race-track').value;
         const pos = parseInt(group.querySelector('.race-pos').value);
-        const pts = positionPoints[pos] || 0;
+        const pts = ptsTable[pos] || 0;
         totalScore += pts;
         races.push({ track, position: pos, points: pts });
       });
 
-      const newMogi = {
-        id: Date.now(),
-        title,
-        format: currentFormat,
-        score: totalScore,
-        races,
-        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-      };
+      if (editingId) {
+        savedMogis = savedMogis.map(m => m.id == editingId ? {
+          ...m, title, mmrChange, placement, score: totalScore, races
+        } : m);
+      } else {
+        const newMogi = {
+          id: Date.now(),
+          title,
+          format: currentFormat,
+          score: totalScore,
+          mmrChange,
+          placement,
+          races,
+          date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        };
+        savedMogis.unshift(newMogi);
+      }
 
-      savedMogis.unshift(newMogi);
       localStorage.setItem('squadling_mogis', JSON.stringify(savedMogis));
-
       closeAddMogiModal();
       renderMogis();
+    }
+
+    function viewMogi(id) {
+      const mogi = savedMogis.find(m => m.id == id);
+      if (!mogi) return;
+
+      document.getElementById('view-mogi-title').textContent = mogi.title;
+      
+      let mmrHtml = '';
+      if (mogi.mmrChange) {
+        const isGain = mogi.mmrChange.includes('+');
+        mmrHtml = `<span class="${isGain ? 'mmr-gain' : 'mmr-loss'}" style="font-weight:700;">(${mogi.mmrChange})</span>`;
+      }
+
+      let racesHtml = mogi.races.map((r, i) => `
+        <div class="race-detail-row">
+          <span>Race ${i+1}: <strong>${r.track}</strong></span>
+          <span>${r.position}${getOrdinal(r.position)} Place • <strong style="color:var(--gold);">${r.points} Pts</strong></span>
+        </div>
+      `).join('');
+
+      document.getElementById('view-mogi-body').innerHTML = `
+        <div style="display:flex; justify-content:space-between; margin-bottom:16px; background:#0f172a; padding:12px; border-radius:8px;">
+          <div><strong>Date:</strong> ${mogi.date}</div>
+          <div><strong>Placement:</strong> ${mogi.placement}${getOrdinal(mogi.placement)} Place</div>
+          <div><strong>Total Score:</strong> <span style="color:var(--gold); font-weight:800;">${mogi.score} Pts</span> ${mmrHtml}</div>
+        </div>
+        <h4 style="margin-bottom:10px;">Race Breakdowns</h4>
+        ${racesHtml}
+      `;
+
+      document.getElementById('edit-from-view-btn').onclick = () => {
+        closeViewMogiModal();
+        openAddMogiModal(mogi);
+      };
+
+      document.getElementById('view-mogi-modal').classList.add('active');
+    }
+
+    function closeViewMogiModal() {
+      document.getElementById('view-mogi-modal').classList.remove('active');
     }
 
     function renderMogis() {
@@ -395,15 +536,25 @@
         return;
       }
 
-      container.innerHTML = filtered.map(m => `
-        <div class="mogi-card">
-          <div class="mogi-info">
-            <h4>${m.title}</h4>
-            <p>${m.date} • ${m.races.length} Races Played</p>
+      container.innerHTML = filtered.map(m => {
+        let mmrDisplay = '';
+        if (m.mmrChange) {
+          const isGain = m.mmrChange.startsWith('+');
+          mmrDisplay = `<span class="mmr-change ${isGain ? 'mmr-gain' : 'mmr-loss'}">${m.mmrChange}</span>`;
+        }
+        return `
+          <div class="mogi-card" onclick="viewMogi(${m.id})">
+            <div class="mogi-info">
+              <h4>${m.title} ${m.placement ? `• ${m.placement}${getOrdinal(m.placement)} Place` : ''}</h4>
+              <p>${m.date} • ${m.races.length} Races Played</p>
+            </div>
+            <div class="mogi-stats-summary">
+              ${mmrDisplay}
+              <div class="mogi-score">${m.score} Pts</div>
+            </div>
           </div>
-          <div class="mogi-score">${m.score} Pts</div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     function getOrdinal(n) {
@@ -412,7 +563,6 @@
       return s[(v - 20) % 10] || s[v] || s[0];
     }
 
-    // Initial Render
     renderMogis();
   </script>
 </body>
