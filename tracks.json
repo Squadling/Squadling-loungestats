@@ -1,0 +1,254 @@
+[
+  {
+    "id": "mario-bros-circuit",
+    "name": "Mario Bros. Circuit",
+    "game": "",
+    "icon": "images/icons/mario-bros-circuit.png",
+    "layout": "images/layouts/mario-bros-circuit.jpg"
+  },
+  {
+    "id": "crown-city",
+    "name": "Crown City",
+    "game": "",
+    "icon": "images/icons/crown-city.png",
+    "layout": "images/layouts/crown-city.jpg"
+  },
+  {
+    "id": "whistlestop-summit",
+    "name": "Whistlestop Summit",
+    "game": "",
+    "icon": "images/icons/whistlestop-summit.png",
+    "layout": "images/layouts/whistlestop-summit.jpg"
+  },
+  {
+    "id": "dk-spaceport",
+    "name": "DK Spaceport",
+    "game": "",
+    "icon": "images/icons/dk-spaceport.png",
+    "layout": "images/layouts/dk-spaceport.jpg"
+  },
+  {
+    "id": "desert-hills",
+    "name": "Desert Hills",
+    "game": "DS",
+    "icon": "images/icons/desert-hills.png",
+    "layout": "images/layouts/desert-hills.jpg"
+  },
+  {
+    "id": "shy-guy-bazaar",
+    "name": "Shy Guy Bazaar",
+    "game": "3DS",
+    "icon": "images/icons/shy-guy-bazaar.png",
+    "layout": "images/layouts/shy-guy-bazaar.jpg"
+  },
+  {
+    "id": "wario-stadium",
+    "name": "Wario Stadium",
+    "game": "N64",
+    "icon": "images/icons/wario-stadium.png",
+    "layout": "images/layouts/wario-stadium.jpg"
+  },
+  {
+    "id": "airship-fortress",
+    "name": "Airship Fortress",
+    "game": "DS",
+    "icon": "images/icons/airship-fortress.png",
+    "layout": "images/layouts/airship-fortress.jpg"
+  },
+  {
+    "id": "dk-pass",
+    "name": "DK Pass",
+    "game": "DS",
+    "icon": "images/icons/dk-pass.png",
+    "layout": "images/layouts/dk-pass.jpg"
+  },
+  {
+    "id": "starview-peak",
+    "name": "Starview Peak",
+    "game": "",
+    "icon": "images/icons/starview-peak.png",
+    "layout": "images/layouts/starview-peak.jpg"
+  },
+  {
+    "id": "sky-high-sundae",
+    "name": "Sky-High Sundae",
+    "game": "Tour",
+    "icon": "images/icons/sky-high-sundae.png",
+    "layout": "images/layouts/sky-high-sundae.jpg"
+  },
+{
+    "id": "warios-shipyard",
+    "name": "Wario Shipyard",
+    "game": "3DS",
+    "icon": "images/icons/warios-shipyard.png",
+    "layout": "images/layouts/warios-shipyard.jpg"
+  },
+  {
+    "id": "koopa-troopa-beach",
+    "name": "Koopa Troopa Beach",
+    "game": "SNES",
+    "icon": "images/icons/koopa-troopa-beach.png",
+    "layout": "images/layouts/koopa-troopa-beach.jpg"
+  },
+  {
+    "id": "faraway-oasis",
+    "name": "Faraway Oasis",
+    "game": "",
+    "icon": "images/icons/faraway-oasis.png",
+    "layout": "images/layouts/faraway-oasis.jpg"
+  },
+  {
+    "id": "peach-stadium",
+    "name": "Peach Stadium",
+    "game": "",
+    "icon": "images/icons/peach-stadium.png",
+    "layout": "images/layouts/peach-stadium.jpg"
+  },
+  {
+    "id": "peach-beach",
+    "name": "Peach Beach",
+    "game": "GameCube",
+    "icon": "images/icons/peach-beach.png",
+    "layout": "images/layouts/peach-beach.jpg"
+  },
+  {
+    "id": "salty-salty-speedway",
+    "name": "Salty Salty Speedway",
+    "game": "",
+    "icon": "images/icons/salty-salty-speedway.png",
+    "layout": "images/layouts/salty-salty-speedway.jpg"
+  },
+  {
+    "id": "dino-dino-jungle",
+    "name": "Dino Dino Jungle",
+    "game": "GameCube",
+    "icon": "images/icons/dino-dino-jungle.png",
+    "layout": "images/layouts/dino-dino-jungle.jpg"
+  },
+  {
+    "id": "great-block-ruins",
+    "name": "Great ? Block Ruins",
+    "game": "",
+    "icon": "images/icons/great-block-ruins.png",
+    "layout": "images/layouts/great-block-ruins.jpg"
+  },
+  {
+    "id": "cheep-cheep-falls",
+    "name": "Cheep Cheep Falls",
+    "game": "",
+    "icon": "images/icons/cheep-cheep-falls.png",
+    "layout": "images/layouts/cheep-cheep-falls.jpg"
+  },
+  {
+    "id": "dandelion-depths",
+    "name": "Dandelion Depths",
+    "game": "",
+    "icon": "images/icons/dandelion-depths.png",
+    "layout": "images/layouts/dandelion-depths.jpg"
+  },
+  {
+    "id": "boo-cinema",
+    "name": "Boo Cinema",
+    "game": "",
+    "icon": "images/icons/boo-cinema.png",
+    "layout": "images/layouts/boo-cinema.jpg"
+  },
+  {
+    "id": "dry-bones-burnout",
+    "name": "Dry Bones Burnout",
+    "game": "",
+    "icon": "images/icons/dry-bones-burnout.png",
+    "layout": "images/layouts/dry-bones-burnout.jpg"
+  },
+  {
+    "id": "moo-moo-meadows",
+    "name": "Moo Moo Meadows",
+    "game": "Wii",
+    "icon": "images/icons/moo-moo-meadows.png",
+    "layout": "images/layouts/moo-moo-meadows.jpg"
+  },
+  {
+    "id": "choco-mountain",
+    "name": "Choco Mountain",
+    "game": "N64",
+    "icon": "images/icons/choco-mountain.png",
+    "layout": "images/layouts/choco-mountain.jpg"
+  },
+  {
+    "id": "toads-factory",
+    "name": "Toad's Factory",
+    "game": "Wii",
+    "icon": "images/icons/toads-factory.png",
+    "layout": "images/layouts/toads-factory.jpg"
+  },
+  {
+    "id": "bowsers-castle",
+    "name": "Bowser's Castle",
+    "game": "",
+    "icon": "images/icons/bowsers-castle.png",
+    "layout": "images/layouts/bowsers-castle.jpg"
+  },
+  {
+    "id": "acorn-heights",
+    "name": "Acorn Heights",
+    "game": "",
+    "icon": "images/icons/acorn-heights.png",
+    "layout": "images/layouts/acorn-heights.jpg"
+  },
+  {
+    "id": "mario-circuit",
+    "name": "Mario Circuit",
+    "game": "SNES",
+    "icon": "images/icons/mario-circuit.png",
+    "layout": "images/layouts/mario-circuit.jpg"
+  },
+  {
+    "id": "rainbow-road",
+    "name": "Rainbow Road",
+    "game": "",
+    "icon": "images/icons/rainbow-road.png",
+    "layout": "images/layouts/rainbow-road.jpg"
+  },
+  {
+    "id": "snes-ghost-valley-1",
+    "name": "SNES Ghost Valley 1",
+    "game": "SNES",
+    "icon": "images/icons/snes-ghost-valley-1.png",
+    "layout": "images/layouts/snes-ghost-valley-1.jpg"
+  },
+  {
+    "id": "snes-ghost-valley-2",
+    "name": "SNES Ghost Valley 2",
+    "game": "SNES",
+    "icon": "images/icons/snes-ghost-valley-2.png",
+    "layout": "images/layouts/snes-ghost-valley-2.jpg"
+  },
+  {
+    "id": "snes-ghost-valley-3",
+    "name": "SNES Ghost Valley 3",
+    "game": "SNES",
+    "icon": "images/icons/snes-ghost-valley-3.png",
+    "layout": "images/layouts/snes-ghost-valley-3.jpg"
+  },
+  {
+    "id": "snes-choco-island-1",
+    "name": "SNES Choco Island 1",
+    "game": "SNES",
+    "icon": "images/icons/snes-choco-island-1.png",
+    "layout": "images/layouts/snes-choco-island-1.jpg"
+  },
+  {
+    "id": "snes-choco-island-2",
+    "name": "SNES Choco Island 2",
+    "game": "SNES",
+    "icon": "images/icons/snes-choco-island-2.png",
+    "layout": "images/layouts/snes-choco-island-2.jpg"
+  },
+  {
+    "id": "snes-vanilla-lake-1",
+    "name": "SNES Vanilla Lake 1",
+    "game": "SNES",
+    "icon": "images/icons/snes-vanilla-lake-1.png",
+    "layout": "images/layouts/snes-vanilla-lake-1.jpg"
+  }
+]
