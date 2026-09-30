@@ -1,0 +1,43 @@
+{
+  "12p": [
+    { "name": "Iron", "min": 0, "max": 1999, "color": "#71717a" },
+    { "name": "Bronze", "min": 2000, "max": 3999, "color": "#b45309" },
+    { "name": "Silver", "min": 4000, "max": 5999, "color": "#94a3b8" },
+    { "name": "Gold", "min": 6000, "max": 7999, "color": "#eab308" },
+    { "name": "Platinum", "min": 8000, "max": 9499, "color": "#22d3ee" },
+    { "name": "Sapphire", "min": 9500, "max": 10999, "color": "#2563eb" },
+    { "name": "Ruby", "min": 11000, "max": 12499, "color": "#e11d48" },
+    { "name": "Diamond", "min": 12500, "max": 13999, "color": "#a855f7" },
+    { "name": "Master", "min": 14000, "max": 14999, "color": "#f43f5e" },
+    { "name": "Grandmaster", "min": 15000, "max": 99999, "color": "#f97316" }
+  ],
+  "24p": [
+    { "name": "Iron", "min": 0, "max": 1999, "color": "#71717a" },
+    { "name": "Bronze", "min": 2000, "max": 3999, "color": "#b45309" },
+    { "name": "Silver", "min": 4000, "max": 5999, "color": "#94a3b8" },
+    { "name": "Gold", "min": 6000, "max": 7999, "color": "#eab308" },
+    { "name": "Platinum", "min": 8000, "max": 9999, "color": "#22d3ee" },
+    { "name": "Sapphire", "min": 10000, "max": 11499, "color": "#2563eb" },
+    { "name": "Ruby", "min": 11500, "max": 12999, "color": "#e11d48" },
+    { "name": "Diamond", "min": 13000, "max": 14499, "color": "#a855f7" },
+    { "name": "Master", "min": 14500, "max": 15499, "color": "#f43f5e" },
+    { "name": "Grandmaster", "min": 15500, "max": 99999, "color": "#f97316" }
+  ],
+  "ko": [
+    { "name": "Iron 1", "min": 0, "max": 499, "color": "#71717a" },
+    { "name": "Iron 2", "min": 500, "max": 999, "color": "#a1a1aa" },
+    { "name": "Bronze 1", "min": 1000, "max": 1499, "color": "#b45309" },
+    { "name": "Bronze 2", "min": 1500, "max": 1999, "color": "#d97706" },
+    { "name": "Silver 1", "min": 2000, "max": 2499, "color": "#94a3b8" },
+    { "name": "Silver 2", "min": 2500, "max": 2999, "color": "#cbd5e1" },
+    { "name": "Gold 1", "min": 3000, "max": 3499, "color": "#eab308" },
+    { "name": "Gold 2", "min": 3500, "max": 3999, "color": "#fde047" },
+    { "name": "Platinum", "min": 4000, "max": 4499, "color": "#22d3ee" },
+    { "name": "Pearl", "min": 4500, "max": 4999, "color": "#f472b6" },
+    { "name": "Sapphire", "min": 5000, "max": 5499, "color": "#2563eb" },
+    { "name": "Emerald", "min": 5500, "max": 5999, "color": "#10b981" },
+    { "name": "Ruby", "min": 6000, "max": 6499, "color": "#e11d48" },
+    { "name": "Diamond", "min": 6500, "max": 6999, "color": "#a855f7" },
+    { "name": "Master", "min": 7000, "max": 99999, "color": "#f43f5e" }
+  ]
+}
