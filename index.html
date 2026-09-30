@@ -90,6 +90,16 @@
     .stat-card .label { color: var(--text-muted); font-size: 0.85rem; font-weight: 500; text-transform: uppercase; }
     .stat-card .value { font-size: 1.8rem; font-weight: 700; margin-top: 6px; }
 
+    .rank-badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 6px;
+      font-size: 1.2rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
     .section-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 16px; }
     .mogi-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
     .mogi-card {
@@ -193,6 +203,7 @@
         <p><span id="player-region">Region: GER</span> | Player ID: 15545</p>
       </div>
       <div class="header-actions">
+        <button class="btn btn-secondary" onclick="updateCurrentMMRPrompt()">⚙️ Set Current MMR</button>
         <a id="lounge-link" href="https://lounge.mkcentral.com/mkworld/PlayerDetails/15545?season=3&p=12" target="_blank" class="btn btn-secondary">
           Official Lounge Profile ↗
         </a>
@@ -271,7 +282,6 @@
 
         <button type="button" class="btn btn-secondary" onclick="addRaceInput()" style="margin-top: 10px; width: 100%;">+ Add Another Race</button>
 
-        <!-- Gain/Lose & Placement Controls -->
         <div class="form-row-2" style="margin-top: 20px;">
           <div>
             <label style="display: block; margin-bottom: 6px; font-size: 0.85rem;">Gain / Lose (MMR)</label>
@@ -312,31 +322,21 @@
   </div>
 
   <script>
-    const ADMIN_PIN = "1234"; // ÄNDERE DIESE PIN ZU DEINER GEHEIMEN PIN!
+    const ADMIN_PIN = "1234"; // DEINE PIN
     let currentFormat = "12p";
     let currentSeason = "3";
     let tracksDatabase = [];
+    let ranksDatabase = {};
+    let playerMMRs = JSON.parse(localStorage.getItem('squadling_mmrs')) || {};
     let savedMogis = JSON.parse(localStorage.getItem('squadling_mogis')) || [];
 
-    // Migrate old mogis to Season 3 if season is missing
     savedMogis = savedMogis.map(m => ({ ...m, season: m.season || "3" }));
 
-    const points12p = {
-      1: 15, 2: 12, 3: 10, 4: 9, 5: 8, 6: 7,
-      7: 6,  8: 5,  9: 4, 10: 3, 11: 2, 12: 1
-    };
+    const points12p = { 1: 15, 2: 12, 3: 10, 4: 9, 5: 8, 6: 7, 7: 6, 8: 5, 9: 4, 10: 3, 11: 2, 12: 1 };
+    const points24p = { 1: 15, 2: 12, 3: 10, 4: 9, 5: 9, 6: 8, 7: 8, 8: 7, 9: 7, 10: 6, 11: 6, 12: 6, 13: 5, 14: 5, 15: 5, 16: 4, 17: 4, 18: 4, 19: 3, 20: 3, 21: 3, 22: 2, 23: 2, 24: 1 };
 
-    const points24p = {
-      1: 15, 2: 12, 3: 10, 4: 9, 5: 9, 6: 8, 7: 8,
-      8: 7, 9: 7, 10: 6, 11: 6, 12: 6, 13: 5, 14: 5,
-      15: 5, 16: 4, 17: 4, 18: 4, 19: 3, 20: 3, 21: 3,
-      22: 2, 23: 2, 24: 1
-    };
-
-    fetch('tracks.json')
-      .then(res => res.json())
-      .then(data => { tracksDatabase = data; })
-      .catch(err => console.log('Notice: tracks.json will load when ready on GitHub Pages.'));
+    fetch('tracks.json').then(res => res.json()).then(data => { tracksDatabase = data; }).catch(() => {});
+    fetch('ranks.json').then(res => res.json()).then(data => { ranksDatabase = data; updateStatsGrid(); }).catch(() => {});
 
     function setFormat(format) {
       currentFormat = format;
@@ -344,12 +344,14 @@
       event.target.classList.add('active');
       updateLoungeLink();
       renderMogis();
+      updateStatsGrid();
     }
 
     function setSeason(season) {
       currentSeason = season;
       updateLoungeLink();
       renderMogis();
+      updateStatsGrid();
     }
 
     function updateLoungeLink() {
@@ -357,6 +359,42 @@
       if (currentFormat === '12p') loungeLink.href = `https://lounge.mkcentral.com/mkworld/PlayerDetails/15545?season=${currentSeason}&p=12`;
       else if (currentFormat === '24p') loungeLink.href = `https://lounge.mkcentral.com/mkworld/PlayerDetails/15545?season=${currentSeason}&p=24`;
       else if (currentFormat === 'ko') loungeLink.href = "https://docs.google.com/spreadsheets/d/14h-Cp5yK9nddewMIYtlzXvgjRiORt2lMAtq-CXjheec/edit?gid=341469667#gid=341469667";
+    }
+
+    function updateCurrentMMRPrompt() {
+      const pin = prompt("Enter Admin PIN:");
+      if (pin !== ADMIN_PIN) return alert("Incorrect PIN!");
+
+      const current = getMMR(currentFormat, currentSeason);
+      const newMMR = prompt(`Enter Current MMR for ${currentFormat.toUpperCase()} (Season ${currentSeason}):`, current !== "---" ? current : "6000");
+
+      if (newMMR !== null && !isNaN(parseInt(newMMR))) {
+        const key = `${currentFormat}_s${currentSeason}`;
+        playerMMRs[key] = parseInt(newMMR);
+        localStorage.setItem('squadling_mmrs', JSON.stringify(playerMMRs));
+        updateStatsGrid();
+      }
+    }
+
+    function getMMR(format, season) {
+      const key = `${format}_s${season}`;
+      return playerMMRs[key] !== undefined ? playerMMRs[key] : "---";
+    }
+
+    function updateStatsGrid() {
+      const mmr = getMMR(currentFormat, currentSeason);
+      document.getElementById('stat-mmr').textContent = mmr !== "---" ? mmr : "---";
+
+      if (mmr !== "---" && ranksDatabase[currentFormat]) {
+        const rankObj = ranksDatabase[currentFormat].find(r => mmr >= r.min && mmr <= r.max);
+        if (rankObj) {
+          document.getElementById('stat-rank').innerHTML = `<span class="rank-badge" style="color: ${rankObj.color};">${rankObj.name}</span>`;
+        } else {
+          document.getElementById('stat-rank').textContent = "---";
+        }
+      } else {
+        document.getElementById('stat-rank').textContent = "---";
+      }
     }
 
     function populatePlacementDropdown() {
@@ -370,21 +408,14 @@
 
     function updateMMRColor(input) {
       const val = input.value.trim();
-      if (val.startsWith('+')) {
-        input.style.color = 'var(--green)';
-      } else if (val.startsWith('-')) {
-        input.style.color = 'var(--red)';
-      } else {
-        input.style.color = '#fff';
-      }
+      if (val.startsWith('+')) input.style.color = 'var(--green)';
+      else if (val.startsWith('-')) input.style.color = 'var(--red)';
+      else input.style.color = '#fff';
     }
 
     function openAddMogiModal(mogiToEdit = null) {
       const pin = prompt("Enter Admin PIN:");
-      if (pin !== ADMIN_PIN) {
-        alert("Incorrect PIN!");
-        return;
-      }
+      if (pin !== ADMIN_PIN) return alert("Incorrect PIN!");
 
       populatePlacementDropdown();
       document.getElementById('races-container').innerHTML = '';
