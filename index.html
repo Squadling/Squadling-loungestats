@@ -209,7 +209,7 @@
       <div class="header-actions">
         <button class="btn btn-secondary" onclick="exportData()" title="Backup Mogis as JSON">📥 Export</button>
         <button class="btn btn-secondary" onclick="importData()" title="Load Mogis from JSON">📤 Import</button>
-        <button class="btn btn-secondary" onclick="updateCurrentMMRPrompt()">⚙️ Set Current MMR</button>
+        <button class="btn btn-secondary" onclick="updateCurrentMMRPrompt()">⚙️ Set Base MMR</button>
         <a id="lounge-link" href="https://lounge.mkcentral.com/mkworld/PlayerDetails/15545?season=3&p=12" target="_blank" class="btn btn-secondary">
           Official Lounge Profile ↗
         </a>
@@ -375,7 +375,7 @@
       if (pin !== ADMIN_PIN) return alert("Incorrect PIN!");
 
       const current = getMMR(currentFormat, currentSeason);
-      const newMMR = prompt(`Enter Current MMR for ${currentFormat.toUpperCase()} (Season ${currentSeason}):`, current !== "---" ? current : "6000");
+      const newMMR = prompt(`Enter Base MMR for ${currentFormat.toUpperCase()} (Season ${currentSeason}):`, current !== "---" ? current : "6000");
 
       if (newMMR !== null && !isNaN(parseInt(newMMR))) {
         const key = `${currentFormat}_s${currentSeason}`;
@@ -504,7 +504,7 @@
       e.preventDefault();
       const title = document.getElementById('mogi-title').value;
       const season = document.getElementById('mogi-season').value;
-      const mmrChange = document.getElementById('mogi-mmr-change').value;
+      const mmrChangeStr = document.getElementById('mogi-mmr-change').value.trim();
       const placement = parseInt(document.getElementById('mogi-final-placement').value);
       const editingId = document.getElementById('editing-mogi-id').value;
 
@@ -520,9 +520,19 @@
         races.push({ track, position: pos, points: pts });
       });
 
+      // MMR automatisch neu berechnen
+      const mmrDelta = parseInt(mmrChangeStr.replace('+', '')) || 0;
+      const key = `${currentFormat}_s${season}`;
+      let oldMmrDelta = 0;
+
       if (editingId) {
+        const oldMogi = savedMogis.find(m => m.id == editingId);
+        if (oldMogi && oldMogi.mmrChange) {
+          oldMmrDelta = parseInt(oldMogi.mmrChange.replace('+', '')) || 0;
+        }
+
         savedMogis = savedMogis.map(m => m.id == editingId ? {
-          ...m, title, season, mmrChange, placement, score: totalScore, races
+          ...m, title, season, mmrChange: mmrChangeStr, placement, score: totalScore, races
         } : m);
       } else {
         const newMogi = {
@@ -531,7 +541,7 @@
           format: currentFormat,
           season,
           score: totalScore,
-          mmrChange,
+          mmrChange: mmrChangeStr,
           placement,
           races,
           date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -539,9 +549,18 @@
         savedMogis.unshift(newMogi);
       }
 
+      // MMR anpassen und abspeichern
+      if (playerMMRs[key] !== undefined && !isNaN(playerMMRs[key])) {
+        playerMMRs[key] = playerMMRs[key] - oldMmrDelta + mmrDelta;
+      } else if (mmrDelta !== 0) {
+        playerMMRs[key] = 6000 + mmrDelta;
+      }
+      localStorage.setItem('squadling_mmrs', JSON.stringify(playerMMRs));
+
       localStorage.setItem('squadling_mogis', JSON.stringify(savedMogis));
       closeAddMogiModal();
       renderMogis();
+      updateStatsGrid();
     }
 
     function viewMogi(id) {
@@ -591,10 +610,21 @@
       if (pin !== ADMIN_PIN) return alert("Incorrect PIN!");
 
       if (confirm("Are you sure you want to delete this Mogi entry?")) {
+        const mogiToDelete = savedMogis.find(m => m.id == id);
+        if (mogiToDelete && mogiToDelete.mmrChange) {
+          const delta = parseInt(mogiToDelete.mmrChange.replace('+', '')) || 0;
+          const key = `${mogiToDelete.format}_s${mogiToDelete.season || "3"}`;
+          if (playerMMRs[key] !== undefined) {
+            playerMMRs[key] -= delta;
+            localStorage.setItem('squadling_mmrs', JSON.stringify(playerMMRs));
+          }
+        }
+
         savedMogis = savedMogis.filter(m => m.id != id);
         localStorage.setItem('squadling_mogis', JSON.stringify(savedMogis));
         closeViewMogiModal();
         renderMogis();
+        updateStatsGrid();
       }
     }
 
