@@ -144,7 +144,7 @@
       border: 1px solid var(--card-border);
       border-radius: 16px;
       width: 100%;
-      max-width: 650px;
+      max-width: 720px;
       max-height: 90vh;
       overflow-y: auto;
       padding: 24px;
@@ -154,14 +154,21 @@
 
     .race-input-group {
       display: grid;
-      grid-template-columns: 75px 1fr 130px 75px;
-      gap: 10px;
+      grid-template-columns: 65px 120px 1fr 130px 70px;
+      gap: 8px;
       align-items: center;
       margin-bottom: 10px;
       background: #0f172a;
       padding: 8px 12px;
       border-radius: 8px;
     }
+
+    .race-tracks-container {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
     select, input {
       background: #1e293b;
       border: 1px solid var(--card-border);
@@ -169,6 +176,15 @@
       padding: 8px;
       border-radius: 6px;
       outline: none;
+    }
+
+    .intermission-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      cursor: pointer;
     }
 
     .form-row-2 {
@@ -209,7 +225,7 @@
       <div class="header-actions">
         <button class="btn btn-secondary" onclick="exportData()" title="Backup Mogis as JSON">📥 Export</button>
         <button class="btn btn-secondary" onclick="importData()" title="Load Mogis from JSON">📤 Import</button>
-        <button class="btn btn-secondary" onclick="updateCurrentMMRPrompt()">⚙️ Set Base MMR</button>
+        <button class="btn btn-secondary" onclick="updateCurrentMMRPrompt()">⚙️️ Set Base MMR</button>
         <a id="lounge-link" href="https://lounge.mkcentral.com/mkworld/PlayerDetails/15545?season=3&p=12" target="_blank" class="btn btn-secondary">
           Official Lounge Profile ↗
         </a>
@@ -443,7 +459,7 @@
         updateMMRColor(mmrInput);
 
         mogiToEdit.races.forEach((r, idx) => {
-          addRaceInput(idx + 1, r.track, r.position);
+          addRaceInput(idx + 1, r.track, r.position, r.isIntermission, r.endTrack);
         });
       } else {
         document.getElementById('modal-title').textContent = "Add New Mogi Result";
@@ -461,7 +477,17 @@
       document.getElementById('add-mogi-modal').classList.remove('active');
     }
 
-    function addRaceInput(raceNum = null, selectedTrack = null, selectedPos = 1) {
+    function toggleIntermissionTrack(checkbox) {
+      const parent = checkbox.closest('.race-input-group');
+      const endTrackSelect = parent.querySelector('.race-end-track');
+      if (checkbox.checked) {
+        endTrackSelect.style.display = 'block';
+      } else {
+        endTrackSelect.style.display = 'none';
+      }
+    }
+
+    function addRaceInput(raceNum = null, selectedTrack = null, selectedPos = 1, isIntermission = false, selectedEndTrack = null) {
       const container = document.getElementById('races-container');
       const num = raceNum || (container.children.length + 1);
       const div = document.createElement('div');
@@ -471,15 +497,34 @@
         ? tracksDatabase.map(t => `<option value="${t.name}" ${t.name === selectedTrack ? 'selected' : ''}>${t.name}</option>`).join('')
         : `<option value="Track ${num}">Track ${num}</option>`;
 
+      let endTrackOptions = tracksDatabase.length > 0 
+        ? tracksDatabase.map(t => `<option value="${t.name}" ${t.name === selectedEndTrack ? 'selected' : ''}>${t.name}</option>`).join('')
+        : `<option value="Track ${num}">Track ${num}</option>`;
+
       const maxPos = currentFormat === '24p' ? 24 : 12;
       let posOptions = '';
       for (let p = 1; p <= maxPos; p++) {
         posOptions += `<option value="${p}" ${p == selectedPos ? 'selected' : ''}>${p}${getOrdinal(p)} Place</option>`;
       }
 
+      // Intermission Option nur für 24p Lounge
+      let intermissionHtml = '';
+      if (currentFormat === '24p') {
+        intermissionHtml = `
+          <label class="intermission-checkbox">
+            <input type="checkbox" class="inter-check" onchange="toggleIntermissionTrack(this)" ${isIntermission ? 'checked' : ''}>
+            Intermission
+          </label>
+        `;
+      }
+
       div.innerHTML = `
         <span style="font-size:0.85rem; color: var(--text-muted);">Race ${num}</span>
-        <select class="race-track">${trackOptions}</select>
+        <div>${intermissionHtml}</div>
+        <div class="race-tracks-container">
+          <select class="race-track" title="Start Track">${trackOptions}</select>
+          <select class="race-end-track" title="End Track" style="display: ${isIntermission ? 'block' : 'none'};">${endTrackOptions}</select>
+        </div>
         <select class="race-pos" onchange="recalculateScore()">${posOptions}</select>
         <span class="race-pts" style="font-weight:700; color:var(--gold); text-align:right;">15 Pts</span>
       `;
@@ -516,8 +561,13 @@
         const track = group.querySelector('.race-track').value;
         const pos = parseInt(group.querySelector('.race-pos').value);
         const pts = ptsTable[pos] || 0;
+        
+        const interCheck = group.querySelector('.inter-check');
+        const isIntermission = interCheck ? interCheck.checked : false;
+        const endTrack = isIntermission ? group.querySelector('.race-end-track').value : null;
+
         totalScore += pts;
-        races.push({ track, position: pos, points: pts });
+        races.push({ track, position: pos, points: pts, isIntermission, endTrack });
       });
 
       // MMR automatisch neu berechnen
@@ -575,12 +625,18 @@
         mmrHtml = `<span class="${isGain ? 'mmr-gain' : 'mmr-loss'}" style="font-weight:700;">(${mogi.mmrChange})</span>`;
       }
 
-      let racesHtml = mogi.races.map((r, i) => `
-        <div class="race-detail-row">
-          <span>Race ${i+1}: <strong>${r.track}</strong></span>
-          <span>${r.position}${getOrdinal(r.position)} Place • <strong style="color:var(--gold);">${r.points} Pts</strong></span>
-        </div>
-      `).join('');
+      let racesHtml = mogi.races.map((r, i) => {
+        let trackNameDisplay = r.track;
+        if (r.isIntermission && r.endTrack) {
+          trackNameDisplay = `${r.track} ➔ ${r.endTrack} <span style="font-size:0.75rem; color:var(--accent);">(Intermission)</span>`;
+        }
+        return `
+          <div class="race-detail-row">
+            <span>Race ${i+1}: <strong>${trackNameDisplay}</strong></span>
+            <span>${r.position}${getOrdinal(r.position)} Place • <strong style="color:var(--gold);">${r.points} Pts</strong></span>
+          </div>
+        `;
+      }).join('');
 
       document.getElementById('view-mogi-body').innerHTML = `
         <div style="display:flex; justify-content:space-between; margin-bottom:16px; background:#0f172a; padding:12px; border-radius:8px;">
