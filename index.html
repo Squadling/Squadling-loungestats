@@ -1,372 +1,419 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mario Kart World - Lounge Stats</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Squadling - MKWorld Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
-      --bg-color: #0b0f19;
+      --bg-dark: #0b0f19;
       --card-bg: #151c2c;
-      --accent-12p: #38bdf8;
-      --accent-24p: #a855f7;
+      --card-border: #232d42;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
-      --green: #22c55e;
-      --red: #ef4444;
-      --border: #232d42;
+      --gold: #f59e0b;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-    body { background-color: var(--bg-color); color: var(--text-main); padding: 20px; max-width: 1200px; margin: 0 auto; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    body { background-color: var(--bg-dark); color: var(--text-main); padding: 20px; line-height: 1.5; }
+    .container { max-width: 1200px; margin: 0 auto; }
 
-    header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid var(--border); margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
-    .player-profile { display: flex; align-items: center; gap: 16px; }
-    .avatar { width: 60px; height: 60px; border-radius: 50%; background: var(--accent-12p); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 24px; color: #000; transition: background 0.3s; }
-    .player-info h1 { font-size: 1.5rem; display: flex; align-items: center; gap: 8px; }
-    .player-info p { color: var(--text-muted); font-size: 0.9rem; }
-    .mkw-badge { font-size: 0.75rem; background: rgba(56, 189, 248, 0.15); color: var(--accent-12p); padding: 2px 8px; border-radius: 4px; font-weight: 600; border: 1px solid var(--accent-12p); }
-
-    .controls-container { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-    .season-select {
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       background: var(--card-bg);
-      color: var(--text-main);
-      border: 1px solid var(--border);
-      padding: 8px 12px;
+      padding: 20px 30px;
+      border-radius: 16px;
+      border: 1px solid var(--card-border);
+      margin-bottom: 24px;
+    }
+    .user-info h1 { font-size: 1.8rem; font-weight: 800; color: #fff; }
+    .user-info p { color: var(--text-muted); font-size: 0.95rem; }
+    .header-actions { display: flex; gap: 12px; align-items: center; }
+
+    .btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn:hover { background: var(--accent-hover); }
+    .btn-secondary { background: #1e293b; color: var(--text-main); border: 1px solid var(--card-border); }
+    .btn-secondary:hover { background: #334155; }
+
+    /* Format Controls */
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .format-selector { display: flex; gap: 8px; background: #0f172a; padding: 6px; border-radius: 12px; border: 1px solid var(--card-border); }
+    .format-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 8px 16px;
       border-radius: 8px;
       font-weight: 600;
-      font-size: 0.9rem;
       cursor: pointer;
+    }
+    .format-btn.active { background: var(--accent); color: #fff; }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 20px;
+      border-radius: 14px;
+    }
+    .stat-card .label { color: var(--text-muted); font-size: 0.85rem; font-weight: 500; text-transform: uppercase; }
+    .stat-card .value { font-size: 1.8rem; font-weight: 700; margin-top: 6px; }
+
+    /* Main Content Sections */
+    .section-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 16px; }
+    .mogi-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+    .mogi-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .mogi-info h4 { font-size: 1.05rem; }
+    .mogi-info p { color: var(--text-muted); font-size: 0.85rem; }
+    .mogi-score { font-size: 1.4rem; font-weight: 800; color: var(--gold); }
+
+    /* Modal Styling for "Add Mogi" */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 650px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 24px;
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .close-btn { background: transparent; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
+
+    .race-input-group {
+      display: grid;
+      grid-template-columns: 80px 1fr 120px 80px;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+      background: #0f172a;
+      padding: 8px 12px;
+      border-radius: 8px;
+    }
+    select, input {
+      background: #1e293b;
+      border: 1px solid var(--card-border);
+      color: #fff;
+      padding: 8px;
+      border-radius: 6px;
       outline: none;
     }
-    .season-select:hover { border-color: var(--accent-12p); }
 
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px; }
-    .card { background: var(--card-bg); border-radius: 12px; padding: 20px; border: 1px solid var(--border); }
-    .card h3 { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
-    .card .value { font-size: 1.8rem; font-weight: 700; color: var(--text-main); }
-    .card .subtext { font-size: 0.8rem; margin-top: 4px; }
-
-    .chart-container { background: var(--card-bg); border-radius: 12px; padding: 20px; border: 1px solid var(--border); margin-bottom: 24px; position: relative; height: 350px; }
-
-    .section-title { font-size: 1.2rem; margin-bottom: 12px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
-    .table-container { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); overflow-x: auto; margin-bottom: 24px; }
-    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
-    th, td { padding: 12px 16px; border-bottom: 1px solid var(--border); }
-    th { background: rgba(0,0,0,0.3); color: var(--text-muted); font-weight: 600; }
-    tr:last-child td { border-bottom: none; }
-    
-    .pos-plus { color: var(--green); font-weight: 600; }
-    .pos-minus { color: var(--red); font-weight: 600; }
-    .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; display: inline-block; }
-    .badge-win { background: rgba(34, 197, 94, 0.2); color: var(--green); }
-    .badge-loss { background: rgba(239, 68, 68, 0.2); color: var(--red); }
-    .intermission-tag { font-size: 0.75rem; color: var(--accent-24p); background: rgba(168, 85, 247, 0.15); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(168, 85, 247, 0.3); }
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      background: var(--card-bg);
+      border: 1px dashed var(--card-border);
+      border-radius: 12px;
+      color: var(--text-muted);
+    }
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="player-profile">
-      <div class="avatar" id="avatarInitials">15</div>
-      <div class="player-info">
-        <h1 id="playerName">Player #15545 <span class="mkw-badge">MK World</span></h1>
-        <p>Lounge Tier: <span id="playerTier" style="color: var(--accent-12p);">Silver 2</span> | Region: EU</p>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="user-info">
+        <h1 id="player-name">Squadling</h1>
+        <p><span id="player-region">Region: GER</span> | Player ID: 15545</p>
+      </div>
+      <div class="header-actions">
+        <a id="lounge-link" href="https://lounge.mkcentral.com/mkworld/PlayerDetails/15545?season=3&p=12" target="_blank" class="btn btn-secondary">
+          Official Lounge Profile ↗
+        </a>
+        <button class="btn" onclick="openAddMogiModal()">+ Add Mogi</button>
+      </div>
+    </header>
+
+    <!-- Controls -->
+    <div class="controls">
+      <div class="format-selector">
+        <button class="format-btn active" onclick="setFormat('12p')">12p Lounge</button>
+        <button class="format-btn" onclick="setFormat('24p')">24p Lounge</button>
+        <button class="format-btn" onclick="setFormat('ko')">KO Tour</button>
+      </div>
+      <div>
+        <label for="season-select" style="color: var(--text-muted); font-size: 0.9rem;">Season: </label>
+        <select id="season-select" style="margin-left: 6px;">
+          <option value="3">Season 3</option>
+          <option value="2">Season 2</option>
+          <option value="1">Season 1</option>
+        </select>
       </div>
     </div>
 
-    <div class="controls-container">
-      <select id="seasonSelect" class="season-select" onchange="onSeasonChange(this.value)">
-        <option value="season3" selected>Season 3 (Aktuell)</option>
-        <option value="season2">Season 2</option>
-        <option value="season1">Season 1</option>
-      </select>
-
-      <div style="display: flex; gap: 8px; background: var(--card-bg); padding: 4px; border-radius: 8px; border: 1px solid var(--border);">
-        <button id="btn12p" onclick="switchFormat('12p')" style="padding: 8px 16px; border: none; border-radius: 6px; background: var(--accent-12p); color: #000; font-weight: bold; cursor: pointer;">12p Lounge</button>
-        <button id="btn24p" onclick="switchFormat('24p')" style="padding: 8px 16px; border: none; border-radius: 6px; background: transparent; color: var(--text-muted); font-weight: bold; cursor: pointer;">24p World Class</button>
+    <!-- Quick Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="label">Current MMR</div>
+        <div class="value" id="stat-mmr">---</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Rank</div>
+        <div class="value" id="stat-rank">---</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Mogis Played</div>
+        <div class="value" id="stat-events">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Avg Score / Mogi</div>
+        <div class="value" id="stat-avg">0.0</div>
       </div>
     </div>
-  </header>
 
-  <!-- Summary Cards -->
-  <div class="grid">
-    <div class="card">
-      <h3>Aktuelles MMR</h3>
-      <div class="value" id="currentMMR">0</div>
-      <div class="subtext pos-plus" id="mmrStatus">Active Season</div>
-    </div>
-    <div class="card">
-      <h3>Peak MMR</h3>
-      <div class="value" id="peakMMR">0</div>
-      <div class="subtext" style="color: var(--text-muted)">Season Highest</div>
-    </div>
-    <div class="card">
-      <h3>Win Rate</h3>
-      <div class="value" id="winRate">0%</div>
-      <div class="subtext" id="eventCount" style="color: var(--text-muted)">0 Events</div>
-    </div>
-    <div class="card">
-      <h3>Avg. Score / Pos</h3>
-      <div class="value" id="avgRank">0.0</div>
-      <div class="subtext" style="color: var(--text-muted)">Pro Event</div>
+    <!-- Mogi History -->
+    <div class="section-title">Mogi History & Results</div>
+    <div id="mogi-container" class="mogi-list">
+      <div class="empty-state">No Mogis added yet for this format. Click "+ Add Mogi" to enter your first match!</div>
     </div>
   </div>
 
-  <!-- MMR Chart -->
-  <div class="chart-container">
-    <div class="section-title" id="chartTitle">MMR Verlauf</div>
-    <canvas id="mmrChart"></canvas>
-  </div>
+  <!-- Modal: Add Mogi -->
+  <div class="modal-overlay" id="add-mogi-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Add New Mogi Result</h3>
+        <button class="close-btn" onclick="closeAddMogiModal()">&times;</button>
+      </div>
+      <form id="mogi-form" onsubmit="saveMogi(event)">
+        <div style="margin-bottom: 16px;">
+          <label style="display: block; margin-bottom: 6px; font-size: 0.9rem;">Mogi Title / Event Name</label>
+          <input type="text" id="mogi-title" placeholder="e.g., Squad Queue Mogi #1" required style="width: 100%;">
+        </div>
 
-  <!-- Strecken-Stats & Ingame Details Grid -->
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 24px;">
-    
-    <!-- Top Tracks -->
-    <div class="card">
-      <div class="section-title">Beste Strecken & Routen</div>
-      <table>
-        <thead>
-          <tr><th>Strecke / Intermission</th><th>Winrate</th><th>Avg. Pos</th></tr>
-        </thead>
-        <tbody id="topTracksBody">
-          <!-- Dynamisch befüllt -->
-        </tbody>
-      </table>
+        <div class="section-title" style="font-size: 1rem; margin-top: 20px;">Races Played (1 - 12)</div>
+        <div id="races-container">
+          <!-- Race rows dynamically generated here -->
+        </div>
+
+        <button type="button" class="btn btn-secondary" onclick="addRaceInput()" style="margin-top: 10px; width: 100%;">+ Add Another Race</button>
+
+        <div style="margin-top: 24px; display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 12px 16px; border-radius: 10px;">
+          <span style="font-weight: 600;">Calculated Total Score:</span>
+          <span id="calculated-total-score" style="font-size: 1.4rem; font-weight: 800; color: var(--gold);">0 Pts</span>
+        </div>
+
+        <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+          <button type="button" class="btn btn-secondary" onclick="closeAddMogiModal()">Cancel</button>
+          <button type="submit" class="btn">Save Mogi</button>
+        </div>
+      </form>
     </div>
-
-    <!-- Extra Ingame Stats -->
-    <div class="card">
-      <div class="section-title">Mario Kart World Details</div>
-      <table style="margin-top: 10px;">
-        <tr><td>Münzen pro Rennen:</td><td class="value" id="coinsAvg" style="font-size: 1rem;">0.0 avg</td></tr>
-        <tr><td>Gefahrene Intermissions:</td><td class="value" id="intermissionCount" style="font-size: 1rem;">0 Total</td></tr>
-        <tr><td>Shock / Star Pulls:</td><td class="value" style="font-size: 1rem;">0%</td></tr>
-        <tr><td>Player ID (Lounge):</td><td class="value" style="font-size: 1rem;">15545</td></tr>
-      </table>
-    </div>
-
-  </div>
-
-  <!-- Match History Table -->
-  <div class="section-title">Letzte Events</div>
-  <div class="table-container">
-    <table>
-      <thead>
-        <tr>
-          <th>Datum</th>
-          <th>Format</th>
-          <th>Platzierung</th>
-          <th>Punkte</th>
-          <th>MMR Change</th>
-          <th>Neues MMR</th>
-        </tr>
-      </thead>
-      <tbody id="matchHistoryBody">
-        <!-- Dynamisch befüllt -->
-      </tbody>
-    </table>
   </div>
 
   <script>
-    // --- MARIO KRAFT WORLD TRACK DATABASE (40 Standard-Strecken) ---
-    const MKWorldTracks = [
-      "Peach Stadium", "Mushroom Hill", "Shy Guy Bazaar", "Daisy Circuit", "Koopa Troopa Beach",
-      "Mario Circuit", "Luigi Circuit", "Choco Mountain", "Kalimari Desert", "Coconut Mall",
-      "Waluigi Pinball", "Dino Dino Jungle", "DK Pass", "Tick-Tock Clock", "Airship Fortress",
-      "Maple Treeway", "Grumble Volcano", "Moonview Highway", "Bowser's Castle", "Rainbow Road",
-      "Mute City", "Big Blue", "Excitebike Arena", "Baby Park", "Wild Woods",
-      "Super Bell Subway", "Cloudtop Cruise", "Electrodrome", "Mount Wario", "Sunshine Airport",
-      "Dolphin Shoals", "Thwomp Ruins", "Water Park", "Sweet Sweet Canyon", "Twisted Mansion",
-      "Shy Guy Falls", "Dragon Driftway", "Ice Ice Outpost", "Hyrule Circuit", "Animal Crossing"
-    ];
+    // Configuration
+    const ADMIN_PIN = "1234"; // CHANGE THIS to your secret PIN!
+    let currentFormat = "12p";
+    let tracksDatabase = [];
+    let savedMogis = JSON.parse(localStorage.getItem('squadling_mogis')) || [];
 
-    // --- DATENBANK STRUKTUR FÜR PLAYER 15545 (Vorbereitet für Auto-Sync) ---
-    const statsData = {
-      season3: {
-        '12p': {
-          tier: "Silver 2",
-          mmr: 4850,
-          peak: 5120,
-          winRate: "54.2%",
-          events: "38 Events",
-          avgPos: "4.5",
-          coinsAvg: "8.8",
-          intermissions: "0",
-          topTracks: [
-            { name: "Mount Wario", winrate: "70%", avg: "2.4" },
-            { name: "Mute City", winrate: "65%", avg: "3.1" },
-            { name: "Waluigi Pinball", winrate: "60%", avg: "3.8" }
-          ],
-          history: [
-            { date: "2026-03-28", format: "FFA 12", rank: 3, score: 78, diff: "+42", mmr: 4850 },
-            { date: "2026-03-26", format: "2v2", rank: 2, score: 85, diff: "+55", mmr: 4808 }
-          ],
-          chartDates: ["1. Mar", "10. Mar", "20. Mar", "28. Mar"],
-          chartValues: [4200, 4500, 4753, 4850]
-        },
-        '24p': {
-          tier: "Bronze 1",
-          mmr: 2400,
-          peak: 2650,
-          winRate: "41.0%",
-          events: "12 Events",
-          avgPos: "10.2",
-          coinsAvg: "7.2",
-          intermissions: "18 Route Races",
-          topTracks: [
-            { name: "Big Blue ➔ Mount Wario", winrate: "58%", avg: "6.2", isIntermission: true },
-            { name: "Rainbow Road ➔ Electrodrome", winrate: "50%", avg: "8.1", isIntermission: true }
-          ],
-          history: [
-            { date: "2026-03-27", format: "24p World Class", rank: 8, score: 52, diff: "+18", mmr: 2400 }
-          ],
-          chartDates: ["1. Mar", "15. Mar", "28. Mar"],
-          chartValues: [2100, 2382, 2400]
-        }
-      },
-      season2: {
-        '12p': {
-          tier: "Bronze 2", mmr: 3200, peak: 3400, winRate: "48.0%", events: "20 Events", avgPos: "5.8", coinsAvg: "7.5", intermissions: "0",
-          topTracks: [{ name: "Mario Circuit", winrate: "50%", avg: "5.0" }],
-          history: [], chartDates: ["Start", "End"], chartValues: [2500, 3200]
-        },
-        '24p': {
-          tier: "Placement", mmr: 1500, peak: 1500, winRate: "0%", events: "0 Events", avgPos: "0.0", coinsAvg: "0.0", intermissions: "0",
-          topTracks: [], history: [], chartDates: ["Start"], chartValues: [1500]
-        }
-      },
-      season1: {
-        '12p': {
-          tier: "Placement", mmr: 1500, peak: 1500, winRate: "0%", events: "0 Events", avgPos: "0.0", coinsAvg: "0.0", intermissions: "0",
-          topTracks: [], history: [], chartDates: ["Start"], chartValues: [1500]
-        },
-        '24p': {
-          tier: "Placement", mmr: 1500, peak: 1500, winRate: "0%", events: "0 Events", avgPos: "0.0", coinsAvg: "0.0", intermissions: "0",
-          topTracks: [], history: [], chartDates: ["Start"], chartValues: [1500]
-        }
-      }
+    // Points mapping per position (1st to 12th)
+    const positionPoints = {
+      1: 15, 2: 12, 3: 10, 4: 9, 5: 8, 6: 7,
+      7: 6,  8: 5,  9: 4, 10: 3, 11: 2, 12: 1
     };
 
-    const playerName = "Player #15545";
-    let currentSeason = 'season3';
-    let currentFormat = '12p';
-    let currentChart = null;
+    // Load Tracks JSON
+    fetch('tracks.json')
+      .then(res => res.json())
+      .then(data => {
+        tracksDatabase = data;
+      })
+      .catch(err => console.log('Notice: tracks.json will load when available on GitHub Pages.'));
 
-    function renderData() {
-      const data = statsData[currentSeason][currentFormat];
-
-      document.getElementById('playerName').innerHTML = `${playerName} <span class="mkw-badge">MK World</span>`;
-      document.getElementById('avatarInitials').innerText = "15";
-      document.getElementById('playerTier').innerText = data.tier;
-
-      document.getElementById('currentMMR').innerText = data.mmr.toLocaleString();
-      document.getElementById('peakMMR').innerText = data.peak.toLocaleString();
-      document.getElementById('winRate').innerText = data.winRate;
-      document.getElementById('eventCount').innerText = data.events;
-      document.getElementById('avgRank').innerText = data.avgPos;
-      document.getElementById('coinsAvg').innerText = `${data.coinsAvg} avg`;
-      document.getElementById('intermissionCount').innerText = data.intermissions;
-
-      const seasonText = document.getElementById('seasonSelect').options[document.getElementById('seasonSelect').selectedIndex].text;
-      document.getElementById('chartTitle').innerText = `MMR Verlauf (${seasonText} - ${currentFormat.toUpperCase()})`;
-
-      // Render Tracks / Intermissions
-      const topTracksBody = document.getElementById('topTracksBody');
-      topTracksBody.innerHTML = '';
-      if(!data.topTracks || data.topTracks.length === 0) {
-        topTracksBody.innerHTML = '<tr><td colspan="3" style="color:var(--text-muted)">Keine Daten verfügbar</td></tr>';
-      } else {
-        data.topTracks.forEach(t => {
-          const tag = t.isIntermission ? ' <span class="intermission-tag">Intermission Route</span>' : '';
-          topTracksBody.innerHTML += `<tr><td><b>${t.name}</b>${tag}</td><td>${t.winrate}</td><td>${t.avg}</td></tr>`;
-        });
-      }
-
-      // Render Match History
-      const historyBody = document.getElementById('matchHistoryBody');
-      historyBody.innerHTML = '';
-      if(!data.history || data.history.length === 0) {
-        historyBody.innerHTML = '<tr><td colspan="6" style="color:var(--text-muted)">Keine Matches erfasst</td></tr>';
-      } else {
-        data.history.forEach(m => {
-          const diffClass = m.diff.startsWith('+') ? 'pos-plus' : 'pos-minus';
-          const badgeClass = m.rank <= (currentFormat === '24p' ? 6 : 3) ? 'badge-win' : 'badge-loss';
-          historyBody.innerHTML += `
-            <tr>
-              <td>${m.date}</td>
-              <td>${m.format}</td>
-              <td><span class="badge ${badgeClass}">${m.rank}. Platz</span></td>
-              <td>${m.score} pts</td>
-              <td class="${diffClass}">${m.diff}</td>
-              <td><b>${m.mmr}</b></td>
-            </tr>
-          `;
-        });
-      }
-
-      // Render Chart
-      if (currentChart) currentChart.destroy();
-      const ctx = document.getElementById('mmrChart').getContext('2d');
-      const activeColor = currentFormat === '24p' ? '#a855f7' : '#38bdf8';
-      const activeBg = currentFormat === '24p' ? 'rgba(168, 85, 247, 0.1)' : 'rgba(56, 189, 248, 0.1)';
-
-      currentChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: data.chartDates,
-          datasets: [{
-            label: `MMR (${currentFormat})`,
-            data: data.chartValues,
-            borderColor: activeColor,
-            backgroundColor: activeBg,
-            fill: true,
-            tension: 0.3,
-            borderWidth: 3
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            x: { grid: { color: '#232d42' }, ticks: { color: '#94a3b8' } },
-            y: { grid: { color: '#232d42' }, ticks: { color: '#94a3b8' } }
-          }
-        }
-      });
-    }
-
-    function onSeasonChange(seasonKey) {
-      currentSeason = seasonKey;
-      renderData();
-    }
-
-    function switchFormat(format) {
+    function setFormat(format) {
       currentFormat = format;
-      const btn12 = document.getElementById('btn12p');
-      const btn24 = document.getElementById('btn24p');
-      const avatar = document.getElementById('avatarInitials');
+      document.querySelectorAll('.format-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
 
+      const loungeLink = document.getElementById('lounge-link');
       if (format === '12p') {
-        btn12.style.background = 'var(--accent-12p)';
-        btn12.style.color = '#000';
-        btn24.style.background = 'transparent';
-        btn24.style.color = 'var(--text-muted)';
-        avatar.style.background = 'var(--accent-12p)';
-      } else {
-        btn24.style.background = 'var(--accent-24p)';
-        btn24.style.color = '#fff';
-        btn12.style.background = 'transparent';
-        btn12.style.color = 'var(--text-muted)';
-        avatar.style.background = 'var(--accent-24p)';
+        loungeLink.href = "https://lounge.mkcentral.com/mkworld/PlayerDetails/15545?season=3&p=12";
+      } else if (format === '24p') {
+        loungeLink.href = "https://lounge.mkcentral.com/mkworld/PlayerDetails/15545?season=3&p=24";
+      } else if (format === 'ko') {
+        loungeLink.href = "https://docs.google.com/spreadsheets/d/14h-Cp5yK9nddewMIYtlzXvgjRiORt2lMAtq-CXjheec/edit?gid=341469667#gid=341469667";
       }
 
-      renderData();
+      renderMogis();
     }
 
-    renderData();
+    function openAddMogiModal() {
+      const pin = prompt("Enter Admin PIN to add or edit Mogis:");
+      if (pin !== ADMIN_PIN) {
+        alert("Incorrect PIN! Only Squadling has editing rights.");
+        return;
+      }
+
+      document.getElementById('races-container').innerHTML = '';
+      for(let i=1; i<=12; i++) {
+        addRaceInput(i);
+      }
+      document.getElementById('add-mogi-modal').classList.add('active');
+    }
+
+    function closeAddMogiModal() {
+      document.getElementById('add-mogi-modal').classList.remove('active');
+    }
+
+    function addRaceInput(raceNum = null) {
+      const container = document.getElementById('races-container');
+      const currentCount = container.children.length + 1;
+      if (currentCount > 12) return;
+
+      const num = raceNum || currentCount;
+      const div = document.createElement('div');
+      div.className = 'race-input-group';
+      
+      let trackOptions = tracksDatabase.length > 0 
+        ? tracksDatabase.map(t => `<option value="${t.name}">${t.name}</option>`).join('')
+        : `<option value="Unknown Track">Track ${num}</option>`;
+
+      div.innerHTML = `
+        <span style="font-size:0.85rem; color: var(--text-muted);">Race ${num}</span>
+        <select class="race-track">${trackOptions}</select>
+        <select class="race-pos" onchange="recalculateScore()">
+          ${Object.keys(positionPoints).map(p => `<option value="${p}">${p}${getOrdinal(p)} Place</option>`).join('')}
+        </select>
+        <span class="race-pts" style="font-weight:700; color:var(--gold); text-align:right;">15 Pts</span>
+      `;
+      container.appendChild(div);
+      recalculateScore();
+    }
+
+    function recalculateScore() {
+      let total = 0;
+      document.querySelectorAll('.race-input-group').forEach(group => {
+        const pos = parseInt(group.querySelector('.race-pos').value);
+        const pts = positionPoints[pos] || 0;
+        group.querySelector('.race-pts').textContent = `${pts} Pts`;
+        total += pts;
+      });
+      document.getElementById('calculated-total-score').textContent = `${total} Pts`;
+    }
+
+    function saveMogi(e) {
+      e.preventDefault();
+      const title = document.getElementById('mogi-title').value;
+      let totalScore = 0;
+      const races = [];
+
+      document.querySelectorAll('.race-input-group').forEach(group => {
+        const track = group.querySelector('.race-track').value;
+        const pos = parseInt(group.querySelector('.race-pos').value);
+        const pts = positionPoints[pos] || 0;
+        totalScore += pts;
+        races.push({ track, position: pos, points: pts });
+      });
+
+      const newMogi = {
+        id: Date.now(),
+        title,
+        format: currentFormat,
+        score: totalScore,
+        races,
+        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      };
+
+      savedMogis.unshift(newMogi);
+      localStorage.setItem('squadling_mogis', JSON.stringify(savedMogis));
+
+      closeAddMogiModal();
+      renderMogis();
+    }
+
+    function renderMogis() {
+      const container = document.getElementById('mogi-container');
+      const filtered = savedMogis.filter(m => m.format === currentFormat);
+
+      document.getElementById('stat-events').textContent = filtered.length;
+      if (filtered.length > 0) {
+        const avg = (filtered.reduce((acc, m) => acc + m.score, 0) / filtered.length).toFixed(1);
+        document.getElementById('stat-avg').textContent = avg;
+      } else {
+        document.getElementById('stat-avg').textContent = '0.0';
+      }
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="empty-state">No Mogis added yet for ${currentFormat.toUpperCase()}. Click "+ Add Mogi" to enter your first match!</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(m => `
+        <div class="mogi-card">
+          <div class="mogi-info">
+            <h4>${m.title}</h4>
+            <p>${m.date} • ${m.races.length} Races Played</p>
+          </div>
+          <div class="mogi-score">${m.score} Pts</div>
+        </div>
+      `).join('');
+    }
+
+    function getOrdinal(n) {
+      const s = ["th", "st", "nd", "rd"];
+      const v = n % 100;
+      return s[(v - 20) % 10] || s[v] || s[0];
+    }
+
+    // Initial Render
+    renderMogis();
   </script>
 </body>
 </html>
