@@ -10,8 +10,16 @@
       --bg-dark: #0b0f19;
       --card-bg: #151c2c;
       --card-border: #232d42;
-      --accent: #3b82f6;
-      --accent-hover: #2563eb;
+      --accent-12p: #3b82f6;
+      --accent-12p-hover: #2563eb;
+      --accent-24p: #1d4ed8;
+      --accent-24p-hover: #1e40af;
+      --accent-ko: #f97316;
+      --accent-ko-hover: #ea580c;
+      
+      --current-accent: var(--accent-12p);
+      --current-accent-hover: var(--accent-12p-hover);
+
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
       --gold: #f59e0b;
@@ -40,7 +48,7 @@
     .header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 
     .btn {
-      background: var(--accent);
+      background: var(--current-accent);
       color: #fff;
       border: none;
       padding: 10px 18px;
@@ -53,7 +61,7 @@
       align-items: center;
       gap: 8px;
     }
-    .btn:hover { background: var(--accent-hover); }
+    .btn:hover { background: var(--current-accent-hover); }
     .btn-secondary { background: #1e293b; color: var(--text-main); border: 1px solid var(--card-border); }
     .btn-secondary:hover { background: #334155; }
     .btn-danger { background: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b; }
@@ -76,8 +84,11 @@
       border-radius: 8px;
       font-weight: 600;
       cursor: pointer;
+      transition: all 0.2s;
     }
-    .format-btn.active { background: var(--accent); color: #fff; }
+    .format-btn.active-12p { background: var(--accent-12p); color: #fff; }
+    .format-btn.active-24p { background: var(--accent-24p); color: #fff; }
+    .format-btn.active-ko { background: var(--accent-ko); color: #fff; }
 
     .stats-grid {
       display: grid;
@@ -104,8 +115,8 @@
       letter-spacing: 0.5px;
     }
 
-    .section-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 16px; }
-    .mogi-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+    .section-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+    .mogi-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
     .mogi-card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -117,15 +128,54 @@
       cursor: pointer;
       transition: transform 0.1s, border-color 0.2s;
     }
-    .mogi-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .mogi-card:hover { border-color: var(--current-accent); transform: translateY(-2px); }
     .mogi-info h4 { font-size: 1.05rem; }
     .mogi-info p { color: var(--text-muted); font-size: 0.85rem; }
     
-    .mogi-stats-summary { display: flex; align-items: center; gap: 20px; }
-    .mogi-score { font-size: 1.4rem; font-weight: 800; color: var(--gold); }
+    .mogi-stats-summary { display: flex; align-items: center; gap: 16px; }
+    .mogi-score { font-size: 1.2rem; font-weight: 800; color: var(--gold); }
+    .mogi-placement { font-size: 1.1rem; font-weight: 800; background: #0f172a; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--card-border); }
     .mmr-change { font-weight: 700; font-size: 1.1rem; }
     .mmr-gain { color: var(--green); }
     .mmr-loss { color: var(--red); }
+
+    /* Performance & Stats Cards Grid */
+    .track-grid-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    @media (max-width: 768px) {
+      .track-grid-container { grid-template-columns: 1fr; }
+    }
+    .track-stat-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 16px;
+    }
+    .track-stat-box h4 {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .track-stat-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      background: #0f172a;
+      border-radius: 8px;
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .track-stat-item .meta {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
 
     /* Modals */
     .modal-overlay {
@@ -144,7 +194,7 @@
       border: 1px solid var(--card-border);
       border-radius: 16px;
       width: 100%;
-      max-width: 720px;
+      max-width: 760px;
       max-height: 90vh;
       overflow-y: auto;
       padding: 24px;
@@ -154,7 +204,7 @@
 
     .race-input-group {
       display: grid;
-      grid-template-columns: 65px 120px 1fr 130px 70px;
+      grid-template-columns: 60px 100px 1fr 130px 60px 70px;
       gap: 8px;
       align-items: center;
       margin-bottom: 10px;
@@ -165,8 +215,9 @@
 
     .race-tracks-container {
       display: flex;
+      flex-direction: column;
       gap: 6px;
-      align-items: center;
+      width: 100%;
     }
 
     select, input {
@@ -178,7 +229,7 @@
       outline: none;
     }
 
-    .intermission-checkbox {
+    .checkbox-label {
       display: flex;
       align-items: center;
       gap: 4px;
@@ -196,11 +247,12 @@
 
     .empty-state {
       text-align: center;
-      padding: 40px;
+      padding: 30px;
       background: var(--card-bg);
       border: 1px dashed var(--card-border);
       border-radius: 12px;
       color: var(--text-muted);
+      font-size: 0.9rem;
     }
 
     .race-detail-row {
@@ -212,6 +264,20 @@
       margin-bottom: 6px;
       font-size: 0.9rem;
     }
+
+    .show-more-btn {
+      width: 100%;
+      padding: 12px;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 32px;
+      transition: background 0.2s;
+    }
+    .show-more-btn:hover { background: #1e293b; }
   </style>
 </head>
 <body>
@@ -225,19 +291,19 @@
       <div class="header-actions">
         <button class="btn btn-secondary" onclick="exportData()" title="Backup Mogis as JSON">📥 Export</button>
         <button class="btn btn-secondary" onclick="importData()" title="Load Mogis from JSON">📤 Import</button>
-        <button class="btn btn-secondary" onclick="updateCurrentMMRPrompt()">⚙️️ Set Base MMR</button>
+        <button class="btn btn-secondary" onclick="updateCurrentMMRPrompt()">⚙ Set Base MMR</button>
         <a id="lounge-link" href="https://lounge.mkcentral.com/mkworld/PlayerDetails/15545?season=3&p=12" target="_blank" class="btn btn-secondary">
           Official Lounge Profile ↗
         </a>
-        <button class="btn" onclick="openAddMogiModal()">+ Add Mogi</button>
+        <button class="btn" id="add-mogi-btn" onclick="openAddMogiModal()">+ Add Mogi</button>
       </div>
     </header>
 
     <div class="controls">
       <div class="format-selector">
-        <button class="format-btn active" onclick="setFormat('12p', event)">12p Lounge</button>
-        <button class="format-btn" onclick="setFormat('24p', event)">24p Lounge</button>
-        <button class="format-btn" onclick="setFormat('ko', event)">KO Tour</button>
+        <button class="format-btn active-12p" id="btn-fmt-12p" onclick="setFormat('12p', event)">12p Lounge</button>
+        <button class="format-btn" id="btn-fmt-24p" onclick="setFormat('24p', event)">24p Lounge</button>
+        <button class="format-btn" id="btn-fmt-ko" onclick="setFormat('ko', event)">KO Tour</button>
       </div>
       <div>
         <label for="season-select" style="color: var(--text-muted); font-size: 0.9rem;">Season: </label>
@@ -268,10 +334,42 @@
       </div>
     </div>
 
+    <!-- SECTION: Track Performance (Best/Worst Avg Positions) -->
+    <div class="section-title">
+      <span>Track Performance (Avg Placement)</span>
+      <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 4px 12px;" onclick="openAllTrackPerformanceModal()">View All ↗</button>
+    </div>
+    <div class="track-grid-container">
+      <div class="track-stat-box">
+        <h4>Top 5 Best Tracks</h4>
+        <div id="top-best-tracks"><div class="empty-state">No track data available</div></div>
+      </div>
+      <div class="track-stat-box">
+        <h4>Top 5 Worst Tracks</h4>
+        <div id="top-worst-tracks"><div class="empty-state">No track data available</div></div>
+      </div>
+    </div>
+
+    <!-- SECTION: History & Results -->
     <div class="section-title">Mogi History & Results</div>
     <div id="mogi-container" class="mogi-list">
       <div class="empty-state">No Mogis added yet for this season/format. Click "+ Add Mogi" to enter your first match!</div>
     </div>
+    <button id="show-all-btn" class="show-more-btn" style="display: none;" onclick="toggleShowAllEvents()">Show all Events</button>
+
+    <!-- SECTION: Track Stats (Picks) -->
+    <div class="section-title">Track Stats (Pick Rate)</div>
+    <div class="track-grid-container">
+      <div class="track-stat-box">
+        <h4>Top 5 Most Picked Tracks</h4>
+        <div id="top-most-picked"><div class="empty-state">No track data available</div></div>
+      </div>
+      <div class="track-stat-box">
+        <h4>Top 5 Least Picked Tracks</h4>
+        <div id="top-least-picked"><div class="empty-state">No track data available</div></div>
+      </div>
+    </div>
+
   </div>
 
   <!-- Modal: Add / Edit Mogi -->
@@ -322,7 +420,7 @@
 
         <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
           <button type="button" class="btn btn-secondary" onclick="closeAddMogiModal()">Cancel</button>
-          <button type="submit" class="btn">Save Mogi</button>
+          <button type="submit" class="btn" id="save-mogi-submit-btn">Save Mogi</button>
         </div>
       </form>
     </div>
@@ -346,10 +444,25 @@
     </div>
   </div>
 
+  <!-- Modal: All Track Performance Leaderboard -->
+  <div class="modal-overlay" id="all-tracks-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>All Track Performance (Best to Worst)</h3>
+        <button class="close-btn" onclick="closeAllTrackPerformanceModal()">&times;</button>
+      </div>
+      <div id="all-tracks-body"></div>
+      <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+        <button class="btn btn-secondary" onclick="closeAllTrackPerformanceModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    const ADMIN_PIN = "1234"; // DEINE PIN
+    const ADMIN_PIN = "1234";
     let currentFormat = "12p";
     let currentSeason = "3";
+    let showAllEventsState = false;
     let tracksDatabase = [];
     let ranksDatabase = {};
     let playerMMRs = JSON.parse(localStorage.getItem('squadling_mmrs')) || {};
@@ -360,23 +473,51 @@
     const points12p = { 1: 15, 2: 12, 3: 10, 4: 9, 5: 8, 6: 7, 7: 6, 8: 5, 9: 4, 10: 3, 11: 2, 12: 1 };
     const points24p = { 1: 15, 2: 12, 3: 10, 4: 9, 5: 9, 6: 8, 7: 8, 8: 7, 9: 7, 10: 6, 11: 6, 12: 6, 13: 5, 14: 5, 15: 5, 16: 4, 17: 4, 18: 4, 19: 3, 20: 3, 21: 3, 22: 2, 23: 2, 24: 1 };
 
-    fetch('tracks.json').then(res => res.json()).then(data => { tracksDatabase = data; }).catch(() => {});
+    fetch('tracks.json').then(res => res.json()).then(data => { tracksDatabase = data; updateAllTrackStats(); }).catch(() => {});
     fetch('ranks.json').then(res => res.json()).then(data => { ranksDatabase = data; updateStatsGrid(); }).catch(() => {});
+
+    function applyFormatTheme() {
+      const root = document.documentElement;
+      const btn12 = document.getElementById('btn-fmt-12p');
+      const btn24 = document.getElementById('btn-fmt-24p');
+      const btnKo = document.getElementById('btn-fmt-ko');
+
+      btn12.className = 'format-btn';
+      btn24.className = 'format-btn';
+      btnKo.className = 'format-btn';
+
+      if (currentFormat === '12p') {
+        root.style.setProperty('--current-accent', 'var(--accent-12p)');
+        root.style.setProperty('--current-accent-hover', 'var(--accent-12p-hover)');
+        btn12.classList.add('active-12p');
+      } else if (currentFormat === '24p') {
+        root.style.setProperty('--current-accent', 'var(--accent-24p)');
+        root.style.setProperty('--current-accent-hover', 'var(--accent-24p-hover)');
+        btn24.classList.add('active-24p');
+      } else if (currentFormat === 'ko') {
+        root.style.setProperty('--current-accent', 'var(--accent-ko)');
+        root.style.setProperty('--current-accent-hover', 'var(--accent-ko-hover)');
+        btnKo.classList.add('active-ko');
+      }
+    }
 
     function setFormat(format, evt) {
       currentFormat = format;
-      document.querySelectorAll('.format-btn').forEach(btn => btn.classList.remove('active'));
-      if(evt && evt.target) evt.target.classList.add('active');
+      showAllEventsState = false;
+      applyFormatTheme();
       updateLoungeLink();
       renderMogis();
       updateStatsGrid();
+      updateAllTrackStats();
     }
 
     function setSeason(season) {
       currentSeason = season;
+      showAllEventsState = false;
       updateLoungeLink();
       renderMogis();
       updateStatsGrid();
+      updateAllTrackStats();
     }
 
     function updateLoungeLink() {
@@ -424,7 +565,7 @@
 
     function populatePlacementDropdown() {
       const select = document.getElementById('mogi-final-placement');
-      select.innerHTML = '';
+      select.innerHTML = '<option value="" disabled selected>-- Select Place --</option>';
       const maxPlaces = currentFormat === '24p' ? 24 : 12;
       for (let i = 1; i <= maxPlaces; i++) {
         select.innerHTML += `<option value="${i}">${i}${getOrdinal(i)} Place</option>`;
@@ -455,11 +596,11 @@
         document.getElementById('mogi-title').value = mogiToEdit.title;
         document.getElementById('mogi-season').value = mogiToEdit.season || currentSeason;
         document.getElementById('mogi-mmr-change').value = mogiToEdit.mmrChange || '';
-        document.getElementById('mogi-final-placement').value = mogiToEdit.placement || 1;
+        document.getElementById('mogi-final-placement').value = mogiToEdit.placement || '';
         updateMMRColor(mmrInput);
 
         mogiToEdit.races.forEach((r, idx) => {
-          addRaceInput(idx + 1, r.track, r.position, r.isIntermission, r.endTrack);
+          addRaceInput(idx + 1, r.track, r.position, r.isIntermission, r.endTrack, r.isDc);
         });
       } else {
         document.getElementById('modal-title').textContent = "Add New Mogi Result";
@@ -487,31 +628,32 @@
       }
     }
 
-    function addRaceInput(raceNum = null, selectedTrack = null, selectedPos = 1, isIntermission = false, selectedEndTrack = null) {
+    function addRaceInput(raceNum = null, selectedTrack = null, selectedPos = null, isIntermission = false, selectedEndTrack = null, isDc = false) {
       const container = document.getElementById('races-container');
       const num = raceNum || (container.children.length + 1);
       const div = document.createElement('div');
       div.className = 'race-input-group';
 
-      let trackOptions = tracksDatabase.length > 0 
-        ? tracksDatabase.map(t => `<option value="${t.name}" ${t.name === selectedTrack ? 'selected' : ''}>${t.name}</option>`).join('')
-        : `<option value="Track ${num}">Track ${num}</option>`;
+      let trackOptions = `<option value="" disabled ${!selectedTrack ? 'selected' : ''}>-- Select Track --</option>`;
+      let endTrackOptions = `<option value="" disabled ${!selectedEndTrack ? 'selected' : ''}>-- Select Goal Track --</option>`;
 
-      let endTrackOptions = tracksDatabase.length > 0 
-        ? tracksDatabase.map(t => `<option value="${t.name}" ${t.name === selectedEndTrack ? 'selected' : ''}>${t.name}</option>`).join('')
-        : `<option value="Track ${num}">Track ${num}</option>`;
+      if (tracksDatabase.length > 0) {
+        tracksDatabase.forEach(t => {
+          trackOptions += `<option value="${t.name}" ${t.name === selectedTrack ? 'selected' : ''}>${t.name}</option>`;
+          endTrackOptions += `<option value="${t.name}" ${t.name === selectedEndTrack ? 'selected' : ''}>${t.name}</option>`;
+        });
+      }
 
       const maxPos = currentFormat === '24p' ? 24 : 12;
-      let posOptions = '';
+      let posOptions = `<option value="" disabled ${!selectedPos ? 'selected' : ''}>-- Select Place --</option>`;
       for (let p = 1; p <= maxPos; p++) {
         posOptions += `<option value="${p}" ${p == selectedPos ? 'selected' : ''}>${p}${getOrdinal(p)} Place</option>`;
       }
 
-      // Intermission Option nur für 24p Lounge
       let intermissionHtml = '';
       if (currentFormat === '24p') {
         intermissionHtml = `
-          <label class="intermission-checkbox">
+          <label class="checkbox-label">
             <input type="checkbox" class="inter-check" onchange="toggleIntermissionTrack(this)" ${isIntermission ? 'checked' : ''}>
             Intermission
           </label>
@@ -522,11 +664,14 @@
         <span style="font-size:0.85rem; color: var(--text-muted);">Race ${num}</span>
         <div>${intermissionHtml}</div>
         <div class="race-tracks-container">
-          <select class="race-track" title="Start Track">${trackOptions}</select>
-          <select class="race-end-track" title="End Track" style="display: ${isIntermission ? 'block' : 'none'};">${endTrackOptions}</select>
+          <select class="race-track">${trackOptions}</select>
+          <select class="race-end-track" style="display: ${isIntermission ? 'block' : 'none'};">${endTrackOptions}</select>
         </div>
         <select class="race-pos" onchange="recalculateScore()">${posOptions}</select>
-        <span class="race-pts" style="font-weight:700; color:var(--gold); text-align:right;">15 Pts</span>
+        <label class="checkbox-label">
+          <input type="checkbox" class="dc-check" ${isDc ? 'checked' : ''}> DC
+        </label>
+        <span class="race-pts" style="font-weight:700; color:var(--gold); text-align:right;">0 Pts</span>
       `;
       container.appendChild(div);
       recalculateScore();
@@ -537,7 +682,8 @@
       const ptsTable = currentFormat === '24p' ? points24p : points12p;
 
       document.querySelectorAll('.race-input-group').forEach(group => {
-        const pos = parseInt(group.querySelector('.race-pos').value);
+        const posSelect = group.querySelector('.race-pos');
+        const pos = parseInt(posSelect.value);
         const pts = ptsTable[pos] || 0;
         group.querySelector('.race-pts').textContent = `${pts} Pts`;
         total += pts;
@@ -550,7 +696,8 @@
       const title = document.getElementById('mogi-title').value;
       const season = document.getElementById('mogi-season').value;
       const mmrChangeStr = document.getElementById('mogi-mmr-change').value.trim();
-      const placement = parseInt(document.getElementById('mogi-final-placement').value);
+      const placementVal = document.getElementById('mogi-final-placement').value;
+      const placement = placementVal ? parseInt(placementVal) : null;
       const editingId = document.getElementById('editing-mogi-id').value;
 
       let totalScore = 0;
@@ -559,18 +706,20 @@
 
       document.querySelectorAll('.race-input-group').forEach(group => {
         const track = group.querySelector('.race-track').value;
-        const pos = parseInt(group.querySelector('.race-pos').value);
-        const pts = ptsTable[pos] || 0;
-        
+        const dcCheck = group.querySelector('.dc-check');
+        const isDc = dcCheck ? dcCheck.checked : false;
+
         const interCheck = group.querySelector('.inter-check');
         const isIntermission = interCheck ? interCheck.checked : false;
         const endTrack = isIntermission ? group.querySelector('.race-end-track').value : null;
 
+        const pos = parseInt(group.querySelector('.race-pos').value) || null;
+        const pts = ptsTable[pos] || 0;
         totalScore += pts;
-        races.push({ track, position: pos, points: pts, isIntermission, endTrack });
+
+        races.push({ track, position: pos, points: pts, isIntermission, endTrack, isDc });
       });
 
-      // MMR automatisch neu berechnen
       const mmrDelta = parseInt(mmrChangeStr.replace('+', '')) || 0;
       const key = `${currentFormat}_s${season}`;
       let oldMmrDelta = 0;
@@ -599,7 +748,6 @@
         savedMogis.unshift(newMogi);
       }
 
-      // MMR anpassen und abspeichern
       if (playerMMRs[key] !== undefined && !isNaN(playerMMRs[key])) {
         playerMMRs[key] = playerMMRs[key] - oldMmrDelta + mmrDelta;
       } else if (mmrDelta !== 0) {
@@ -611,6 +759,7 @@
       closeAddMogiModal();
       renderMogis();
       updateStatsGrid();
+      updateAllTrackStats();
     }
 
     function viewMogi(id) {
@@ -626,23 +775,27 @@
       }
 
       let racesHtml = mogi.races.map((r, i) => {
-        let trackNameDisplay = r.track;
+        let trackNameDisplay = r.track || 'Unknown Track';
         if (r.isIntermission && r.endTrack) {
-          trackNameDisplay = `${r.track} ➔ ${r.endTrack} <span style="font-size:0.75rem; color:var(--accent);">(Intermission)</span>`;
+          trackNameDisplay = `${r.track} ➔ ${r.endTrack} <span style="font-size:0.75rem; color:var(--current-accent);">(Intermission)</span>`;
         }
+
+        let dcBadge = r.isDc ? `<span style="color:var(--red); font-weight:700; margin-left:6px;">[DC]</span>` : '';
+        let resultDisplay = `${r.position ? r.position + getOrdinal(r.position) + ' Place' : '---'} • <strong style="color:var(--gold);">${r.points} Pts</strong> ${dcBadge}`;
+
         return `
           <div class="race-detail-row">
             <span>Race ${i+1}: <strong>${trackNameDisplay}</strong></span>
-            <span>${r.position}${getOrdinal(r.position)} Place • <strong style="color:var(--gold);">${r.points} Pts</strong></span>
+            <span>${resultDisplay}</span>
           </div>
         `;
       }).join('');
 
       document.getElementById('view-mogi-body').innerHTML = `
-        <div style="display:flex; justify-content:space-between; margin-bottom:16px; background:#0f172a; padding:12px; border-radius:8px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:16px; background:#0f172a; padding:12px; border-radius:8px; flex-wrap:wrap; gap:10px;">
           <div><strong>Date:</strong> ${mogi.date}</div>
           <div><strong>Season:</strong> Season ${mogi.season || "3"}</div>
-          <div><strong>Placement:</strong> ${mogi.placement}${getOrdinal(mogi.placement)} Place</div>
+          <div><strong>Placement:</strong> ${mogi.placement ? mogi.placement + getOrdinal(mogi.placement) + ' Place' : '---'}</div>
           <div><strong>Total Score:</strong> <span style="color:var(--gold); font-weight:800;">${mogi.score} Pts</span> ${mmrHtml}</div>
         </div>
         <h4 style="margin-bottom:10px;">Race Breakdowns</h4>
@@ -681,6 +834,7 @@
         closeViewMogiModal();
         renderMogis();
         updateStatsGrid();
+        updateAllTrackStats();
       }
     }
 
@@ -688,8 +842,14 @@
       document.getElementById('view-mogi-modal').classList.remove('active');
     }
 
+    function toggleShowAllEvents() {
+      showAllEventsState = !showAllEventsState;
+      renderMogis();
+    }
+
     function renderMogis() {
       const container = document.getElementById('mogi-container');
+      const showAllBtn = document.getElementById('show-all-btn');
       const filtered = savedMogis.filter(m => m.format === currentFormat && String(m.season || "3") === String(currentSeason));
 
       document.getElementById('stat-events').textContent = filtered.length;
@@ -702,28 +862,202 @@
 
       if (filtered.length === 0) {
         container.innerHTML = `<div class="empty-state">No Mogis added yet for ${currentFormat.toUpperCase()} (Season ${currentSeason}). Click "+ Add Mogi" to enter your first match!</div>`;
+        showAllBtn.style.display = 'none';
         return;
       }
 
-      container.innerHTML = filtered.map(m => {
+      let displayedEvents = filtered;
+      if (!showAllEventsState && filtered.length > 5) {
+        displayedEvents = filtered.slice(0, 5);
+        showAllBtn.style.display = 'block';
+        showAllBtn.textContent = `Show all Events (${filtered.length})`;
+      } else if (showAllEventsState && filtered.length > 5) {
+        showAllBtn.style.display = 'block';
+        showAllBtn.textContent = "Show Less (Recent 5)";
+      } else {
+        showAllBtn.style.display = 'none';
+      }
+
+      container.innerHTML = displayedEvents.map(m => {
         let mmrDisplay = '';
         if (m.mmrChange) {
           const isGain = m.mmrChange.startsWith('+');
           mmrDisplay = `<span class="mmr-change ${isGain ? 'mmr-gain' : 'mmr-loss'}">${m.mmrChange}</span>`;
         }
+
+        const placementDisplay = m.placement ? `<span class="mogi-placement">${m.placement}${getOrdinal(m.placement)}</span>` : '';
+
         return `
           <div class="mogi-card" onclick="viewMogi(${m.id})">
             <div class="mogi-info">
-              <h4>${m.title} ${m.placement ? `• ${m.placement}${getOrdinal(m.placement)} Place` : ''}</h4>
+              <h4>${m.title}</h4>
               <p>${m.date} • ${m.races.length} Races Played • Season ${m.season || "3"}</p>
             </div>
             <div class="mogi-stats-summary">
               ${mmrDisplay}
               <div class="mogi-score">${m.score} Pts</div>
+              ${placementDisplay}
             </div>
           </div>
         `;
       }).join('');
+    }
+
+    // --- TRACK STATS & PERFORMANCE LOGIC ---
+
+    function updateAllTrackStats() {
+      const filteredMogis = savedMogis.filter(m => m.format === currentFormat && String(m.season || "3") === String(currentSeason));
+      
+      const pickStats = {};
+      const perfStats = {};
+
+      filteredMogis.forEach((mogi, mogiIdx) => {
+        mogi.races.forEach(race => {
+          if (!race.track) return;
+
+          // DCs generell aus allen Track-Statistiken ausschließen
+          if (race.isDc) return;
+
+          let key = race.track;
+          if (currentFormat === '24p' && race.isIntermission && race.endTrack) {
+            key = `${race.track} ➔ ${race.endTrack} (Intermission)`;
+          }
+
+          // 1. Pick Stats
+          if (!pickStats[key]) {
+            pickStats[key] = { count: 0, lastMogiIndex: mogiIdx };
+          }
+          pickStats[key].count++;
+
+          // 2. Performance Stats
+          if (race.position) {
+            if (!perfStats[key]) {
+              perfStats[key] = { totalPos: 0, count: 0 };
+            }
+            perfStats[key].totalPos += race.position;
+            perfStats[key].count++;
+          }
+        });
+      });
+
+      // Render Picks
+      renderPickStats(pickStats, filteredMogis.length);
+      // Render Performance
+      renderPerfStats(perfStats);
+    }
+
+    function renderPickStats(pickStats, totalMogisCount) {
+      const array = Object.keys(pickStats).map(k => ({
+        name: k,
+        count: pickStats[k].count,
+        lastAgo: pickStats[k].lastMogiIndex
+      }));
+
+      if (array.length === 0) {
+        document.getElementById('top-most-picked').innerHTML = `<div class="empty-state">No track data available</div>`;
+        document.getElementById('top-least-picked').innerHTML = `<div class="empty-state">No track data available</div>`;
+        return;
+      }
+
+      const sortedMost = [...array].sort((a, b) => b.count - a.count || a.lastAgo - b.lastAgo);
+      const sortedLeast = [...array].sort((a, b) => a.count - b.count || b.lastAgo - a.lastAgo);
+
+      const top5Most = sortedMost.slice(0, 5);
+      const top5Least = sortedLeast.slice(0, 5);
+
+      function formatPickRow(item) {
+        let agoText = item.lastAgo === 0 ? "Played this event" : `Last played ${item.lastAgo} event${item.lastAgo > 1 ? 's' : ''} ago`;
+        return `
+          <div class="track-stat-item">
+            <span><strong>${item.name}</strong></span>
+            <div style="text-align: right;">
+              <span style="color:var(--gold); font-weight:700;">${item.count} Pick${item.count > 1 ? 's' : ''}</span>
+              <div class="meta">${agoText}</div>
+            </div>
+          </div>
+        `;
+      }
+
+      document.getElementById('top-most-picked').innerHTML = top5Most.map(formatPickRow).join('');
+      document.getElementById('top-least-picked').innerHTML = top5Least.map(formatPickRow).join('');
+    }
+
+    function renderPerfStats(perfStats) {
+      const array = Object.keys(perfStats).map(k => ({
+        name: k,
+        avg: (perfStats[k].totalPos / perfStats[k].count).toFixed(2),
+        count: perfStats[k].count
+      }));
+
+      if (array.length === 0) {
+        document.getElementById('top-best-tracks').innerHTML = `<div class="empty-state">No track data available</div>`;
+        document.getElementById('top-worst-tracks').innerHTML = `<div class="empty-state">No track data available</div>`;
+        return;
+      }
+
+      const sortedBest = [...array].sort((a, b) => a.avg - b.avg);
+      const sortedWorst = [...array].sort((a, b) => b.avg - a.avg);
+
+      const top5Best = sortedBest.slice(0, 5);
+      const top5Worst = sortedWorst.slice(0, 5);
+
+      function formatPerfRow(item) {
+        return `
+          <div class="track-stat-item">
+            <span><strong>${item.name}</strong></span>
+            <div style="text-align: right;">
+              <span style="color:var(--green); font-weight:700;">${item.avg}${getOrdinal(Math.round(item.avg))} Place</span>
+              <div class="meta">${item.count} Race${item.count > 1 ? 's' : ''} tracked</div>
+            </div>
+          </div>
+        `;
+      }
+
+      document.getElementById('top-best-tracks').innerHTML = top5Best.map(formatPerfRow).join('');
+      document.getElementById('top-worst-tracks').innerHTML = top5Worst.map(formatPerfRow).join('');
+    }
+
+    function openAllTrackPerformanceModal() {
+      const filteredMogis = savedMogis.filter(m => m.format === currentFormat && String(m.season || "3") === String(currentSeason));
+      const perfStats = {};
+
+      filteredMogis.forEach(mogi => {
+        mogi.races.forEach(race => {
+          if (!race.track || race.isDc || !race.position) return;
+          let key = race.track;
+          if (currentFormat === '24p' && race.isIntermission && race.endTrack) {
+            key = `${race.track} ➔ ${race.endTrack} (Intermission)`;
+          }
+
+          if (!perfStats[key]) perfStats[key] = { totalPos: 0, count: 0 };
+          perfStats[key].totalPos += race.position;
+          perfStats[key].count++;
+        });
+      });
+
+      const array = Object.keys(perfStats).map(k => ({
+        name: k,
+        avg: (perfStats[k].totalPos / perfStats[k].count).toFixed(2),
+        count: perfStats[k].count
+      })).sort((a, b) => a.avg - b.avg);
+
+      const container = document.getElementById('all-tracks-body');
+      if (array.length === 0) {
+        container.innerHTML = `<div class="empty-state">No track performance data available for this format/season.</div>`;
+      } else {
+        container.innerHTML = array.map((item, idx) => `
+          <div class="race-detail-row">
+            <span>#${idx + 1} <strong>${item.name}</strong></span>
+            <span>Avg: <strong style="color:var(--green);">${item.avg}${getOrdinal(Math.round(item.avg))} Place</strong> (${item.count} Races)</span>
+          </div>
+        `).join('');
+      }
+
+      document.getElementById('all-tracks-modal').classList.add('active');
+    }
+
+    function closeAllTrackPerformanceModal() {
+      document.getElementById('all-tracks-modal').classList.remove('active');
     }
 
     function getOrdinal(n) {
@@ -760,6 +1094,7 @@
               localStorage.setItem('squadling_mmrs', JSON.stringify(playerMMRs));
               renderMogis();
               updateStatsGrid();
+              updateAllTrackStats();
               alert("Data imported successfully!");
             } else {
               alert("Invalid JSON structure!");
@@ -772,7 +1107,10 @@
       input.click();
     }
 
+    // Init
+    applyFormatTheme();
     renderMogis();
+    updateAllTrackStats();
   </script>
 </body>
 </html>
